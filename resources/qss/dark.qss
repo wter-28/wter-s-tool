@@ -1,0 +1,342 @@
+/* CTF 工具箱 —— 仿 TscanPlus 暗色主题 */
+
+* {
+    outline: none;
+}
+
+QWidget {
+    background: #1b1c1f;
+    color: #e6e6e6;
+    font-size: 13px;
+}
+
+QMainWindow, QDialog {
+    background: #1b1c1f;
+}
+
+/* ---- 顶部栏 ---- */
+#HeaderBar {
+    background: #232428;
+    border-bottom: 1px solid #303239;
+}
+
+#AppTitle {
+    font-size: 16px;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+/* ---- 左侧分类 ---- */
+#Sidebar {
+    background: #1f2024;
+    border-right: 1px solid #2c2e34;
+}
+
+#SidebarTitle {
+    color: #8b93a1;
+    font-weight: 600;
+    padding: 2px 4px;
+}
+
+#CategoryList {
+    background: transparent;
+    border: none;
+}
+
+#CategoryList::item {
+    padding: 8px 10px;
+    border-radius: 6px;
+    color: #c8cdd6;
+}
+
+#CategoryList::item:hover {
+    background: #2a2c32;
+}
+
+#CategoryList::item:selected {
+    background: #2d7ff9;
+    color: #ffffff;
+}
+
+/* ---- 搜索框 ---- */
+#SearchBar {
+    background: #2a2c32;
+    border: 1px solid #3a3d45;
+    border-radius: 6px;
+    padding: 6px 10px;
+    color: #e6e6e6;
+}
+
+#SearchBar:focus {
+    border-color: #2d7ff9;
+}
+
+/* ---- 卡片网格 ---- */
+#GridScroll {
+    background: transparent;
+}
+
+#ToolCard {
+    background: #26282d;
+    border: 1px solid #33363d;
+    border-radius: 10px;
+}
+
+#ToolCard:hover {
+    border-color: #2d7ff9;
+    background: #2b2e34;
+}
+
+#CardName {
+    font-size: 14px;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+#CardCategory {
+    color: #8b93a1;
+    font-size: 11px;
+}
+
+#CardDesc {
+    color: #aab1bd;
+    font-size: 11px;
+}
+
+#CardBadge {
+    color: #c8cdd6;
+    background: #3a3d45;
+    border-radius: 8px;
+    padding: 1px 8px;
+    font-size: 11px;
+}
+
+#CardBadge[state="ok"] {
+    color: #d6ffe0;
+    background: #1f6b3a;
+}
+
+#CardBadge[state="compile"] {
+    color: #ffe9c2;
+    background: #7a5a12;
+}
+
+#CardBadge[state="missing"] {
+    color: #ffd8d8;
+    background: #7a2222;
+}
+
+#EmptyHint {
+    color: #6f7681;
+    font-size: 14px;
+    padding: 40px;
+}
+
+/* ---- 详情页 ---- */
+#SectionTitle {
+    font-size: 13px;
+    font-weight: 700;
+    color: #7fb2ff;
+    margin-top: 4px;
+}
+
+#BodyText {
+    color: #d3d7de;
+}
+
+#Muted {
+    color: #8b93a1;
+    font-size: 12px;
+}
+
+#DetailTitle {
+    font-size: 20px;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+#NoteBox {
+    background: #3a2c12;
+    border: 1px solid #7a5a12;
+    border-radius: 8px;
+    padding: 8px 10px;
+    color: #ffdca8;
+}
+
+#ExampleRow {
+    background: #202127;
+    border: 1px solid #303239;
+    border-radius: 8px;
+}
+
+#CodeText {
+    font-family: "Consolas", "Courier New", monospace;
+    color: #9fe0a0;
+    font-size: 12px;
+}
+
+#DepOk {
+    color: #6ee7a0;
+}
+
+#DepMissing {
+    color: #ff8f8f;
+}
+
+#GroupTitle {
+    color: #c8cdd6;
+    font-weight: 600;
+    font-size: 12px;
+}
+
+/* ---- 前置文件拖拽区 ---- */
+#InputLabel {
+    font-weight: 600;
+    color: #ffffff;
+}
+
+#DropZone {
+    background: #202127;
+    border: 2px dashed #3f434c;
+    border-radius: 10px;
+}
+
+#DropZone:hover, #DropZone[hover="true"] {
+    border-color: #2d7ff9;
+    background: #23262c;
+}
+
+#DropZone[filled="true"] {
+    border-style: solid;
+    border-color: #1f6b3a;
+    background: #1e2a22;
+}
+
+#DropZoneText {
+    color: #8b93a1;
+}
+
+#DropZone[filled="true"] #DropZoneText {
+    color: #6ee7a0;
+}
+
+/* ---- 控制台 ---- */
+#Console {
+    background: #14151a;
+    border: 1px solid #303239;
+    border-radius: 8px;
+    color: #cfe6cf;
+    padding: 6px;
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 12px;
+}
+
+/* ---- 按钮 ---- */
+QPushButton {
+    background: #2f3239;
+    border: 1px solid #3f434c;
+    border-radius: 6px;
+    padding: 6px 14px;
+    color: #e6e6e6;
+}
+
+QPushButton:hover {
+    background: #393d45;
+    border-color: #4c515b;
+}
+
+QPushButton:disabled {
+    color: #6f7681;
+    background: #26282d;
+    border-color: #2f3239;
+}
+
+#PrimaryButton {
+    background: #2d7ff9;
+    border-color: #2d7ff9;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+#PrimaryButton:hover {
+    background: #4a92ff;
+    border-color: #4a92ff;
+}
+
+#PrimaryButton:disabled {
+    background: #2b3a55;
+    border-color: #2b3a55;
+    color: #8b93a1;
+}
+
+#GhostButton {
+    background: transparent;
+    border: 1px solid #3f434c;
+}
+
+/* ---- 输入框 ---- */
+QLineEdit {
+    background: #2a2c32;
+    border: 1px solid #3a3d45;
+    border-radius: 6px;
+    padding: 6px 10px;
+    color: #e6e6e6;
+}
+
+QLineEdit:focus {
+    border-color: #2d7ff9;
+}
+
+/* ---- 滚动条 ---- */
+QScrollBar:vertical {
+    background: transparent;
+    width: 10px;
+    margin: 0;
+}
+
+QScrollBar::handle:vertical {
+    background: #3d414a;
+    border-radius: 5px;
+    min-height: 30px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: #4c515b;
+}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0;
+}
+
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+    background: transparent;
+}
+
+QScrollBar:horizontal {
+    background: transparent;
+    height: 10px;
+    margin: 0;
+}
+
+QScrollBar::handle:horizontal {
+    background: #3d414a;
+    border-radius: 5px;
+    min-width: 30px;
+}
+
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+    width: 0;
+}
+
+/* ---- 状态栏 ---- */
+QStatusBar {
+    background: #232428;
+    color: #8b93a1;
+    border-top: 1px solid #303239;
+}
+
+QToolTip {
+    background: #2a2c32;
+    color: #e6e6e6;
+    border: 1px solid #3f434c;
+}

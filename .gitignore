@@ -1,0 +1,41 @@
+# 构建产物
+build/
+build-*/
+dist/
+out/
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+CMakeUserPresets.json
+*.cmake
+!CMakeLists.txt
+
+# Qt / IDE
+*.pro.user
+*.user
+.vs/
+.vscode/
+.idea/
+*.autosave
+
+# 可执行文件与库（源码仓库不纳入）
+*.exe
+*.dll
+*.pdb
+*.obj
+*.o
+*.a
+
+# 系统文件
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# 本地配置 / 日志
+*.log
+user_tools.json
+
+# Trae IDE
+.trae/

@@ -1,0 +1,1117 @@
+{
+  "version": 1,
+  "categories": [
+    { "id": "recon", "name": "信息收集", "icon": "cat_recon", "desc": "子域名、资产、指纹、端口" },
+    { "id": "web", "name": "Web 渗透", "icon": "cat_web", "desc": "抓包、目录扫描、WebShell、编码" },
+    { "id": "reverse", "name": "逆向分析", "icon": "cat_reverse", "desc": "反汇编、动态调试、十六进制" },
+    { "id": "stego", "name": "隐写分析", "icon": "cat_stego", "desc": "图片、音频、文本隐写" },
+    { "id": "forensics", "name": "取证分析", "icon": "cat_forensics", "desc": "内存、磁盘、镜像、加密卷" },
+    { "id": "crypto", "name": "密码学与编码", "icon": "cat_crypto", "desc": "RSA、编码转换、古典密码" },
+    { "id": "mystery", "name": "wter的神秘东西", "icon": "cat_mystery", "desc": "尚未归类 / 私人小工具" }
+  ],
+  "tools": [
+    {
+      "id": "subfinder",
+      "name": "subfinder",
+      "category": "recon",
+      "type": "exe",
+      "execTarget": "subfinder/subfinder.exe",
+      "launchKind": "cli",
+      "runnable": true,
+      "argsPlaceholder": "-d example.com   （或 -dL domains.txt -all -o out.txt）",
+      "description": "ProjectDiscovery 出品的被动子域名枚举工具，Go 编写、速度快。它不直接爆破，而是从证书透明度、搜索引擎、威胁情报等数十个公开数据源聚合已存在的子域名记录，适合资产梳理的第一步。",
+      "usage": "在下方输入参数后点「运行」，结果实时输出到控制台。<br>部分数据源需要 API Key（可写入 ~/.config/subfinder/provider-config.yaml）才能获得更全的结果。",
+      "examples": [
+        { "cmd": "subfinder -d example.com", "desc": "枚举单个域名的子域名" },
+        { "cmd": "subfinder -dL domains.txt -all -o subs.txt", "desc": "批量枚举并保存结果" }
+      ],
+      "commands": [
+        { "group": "基础用法", "cmd": "subfinder -d example.com", "desc": "枚举单个域名的子域名" },
+        { "group": "基础用法", "cmd": "subfinder -d example.com -o subs.txt", "desc": "结果写入文件" },
+        { "group": "基础用法", "cmd": "subfinder -dL domains.txt -o subs.txt", "desc": "从文件批量读取域名并枚举" },
+        { "group": "基础用法", "cmd": "subfinder -d example.com -silent", "desc": "只输出子域名，便于管道处理" },
+        { "group": "数据源与深度", "cmd": "subfinder -d example.com -all", "desc": "使用全部数据源（更全但更慢）" },
+        { "group": "数据源与深度", "cmd": "subfinder -d example.com -recursive", "desc": "对已发现子域名递归枚举" },
+        { "group": "数据源与深度", "cmd": "subfinder -ls", "desc": "列出所有可用数据源" },
+        { "group": "数据源与深度", "cmd": "subfinder -d example.com -cs", "desc": "显示每个子域名来自哪些数据源" },
+        { "group": "数据源与深度", "cmd": "subfinder -d example.com -pc provider-config.yaml", "desc": "指定 API Key 配置文件" },
+        { "group": "输出格式", "cmd": "subfinder -d example.com -json", "desc": "以 JSON 行输出" },
+        { "group": "输出格式", "cmd": "subfinder -d example.com -oJ -o out.json", "desc": "JSON 写入文件" },
+        { "group": "性能与网络", "cmd": "subfinder -d example.com -t 50", "desc": "并发数（默认 10）" },
+        { "group": "性能与网络", "cmd": "subfinder -d example.com -timeout 15", "desc": "单个请求超时（秒）" },
+        { "group": "性能与网络", "cmd": "subfinder -d example.com -rl 10", "desc": "限制每秒请求数" },
+        { "group": "其他", "cmd": "subfinder -version", "desc": "查看版本" },
+        { "group": "其他", "cmd": "subfinder -h", "desc": "查看完整帮助" }
+      ],
+      "tips": [
+        "参数 -silent 只输出子域名，便于管道处理",
+        "配合 httpx / ksubdomain 做存活性校验",
+        "无 API Key 时结果偏少，建议补充配置"
+      ],
+      "deps": [],
+      "tags": ["子域名", "被动收集", "资产梳理"],
+      "website": "https://github.com/projectdiscovery/subfinder"
+    },
+    {
+      "id": "ksubdomain",
+      "name": "ksubdomain",
+      "category": "recon",
+      "type": "exe",
+      "execTarget": "ksubdomain.exe",
+      "launchKind": "cli",
+      "runnable": true,
+      "argsPlaceholder": "-d example.com -f dict.txt   （或 -verify -f subs.txt）",
+      "description": "知道创宇出品的无状态高速子域名爆破工具，基于 Go 实现，通过底层发包实现每秒数万级的域名探测，速度远快于传统 DNS 查询工具。",
+      "usage": "输入参数后点「运行」。<br>Windows 下需先安装 <b>Npcap</b>（或 WinPcap）驱动才能正常发包。",
+      "examples": [
+        { "cmd": "ksubdomain.exe -d example.com -f dict.txt", "desc": "用字典爆破子域名" },
+        { "cmd": "ksubdomain.exe -verify -f subdomains.txt", "desc": "验证一批子域名是否存在" }
+      ],
+      "commands": [
+        { "group": "爆破", "cmd": "ksubdomain.exe -d example.com -f dict.txt", "desc": "用字典爆破子域名" },
+        { "group": "爆破", "cmd": "ksubdomain.exe enum -d example.com -f dict.txt", "desc": "显式使用枚举模式" },
+        { "group": "爆破", "cmd": "ksubdomain.exe -d example.com -f dict.txt -o out.txt", "desc": "结果导出到文件" },
+        { "group": "爆破", "cmd": "ksubdomain.exe -d example.com -f dict.txt -speed 20000", "desc": "设置发包速率（默认约 2000）" },
+        { "group": "爆破", "cmd": "ksubdomain.exe -d example.com -f dict.txt --retry 3", "desc": "失败重试次数" },
+        { "group": "验证", "cmd": "ksubdomain.exe -verify -f subs.txt", "desc": "验证文件中的子域名是否存在" },
+        { "group": "验证", "cmd": "ksubdomain.exe -verify -f subs.txt -o ok.txt", "desc": "只导出存活的子域名" },
+        { "group": "网络与环境", "cmd": "ksubdomain.exe -d example.com -f dict.txt -b 8.8.8.8:53", "desc": "指定 DNS 服务器" },
+        { "group": "网络与环境", "cmd": "ksubdomain.exe -d example.com -f dict.txt --eth eth0", "desc": "指定发包网卡" },
+        { "group": "网络与环境", "cmd": "ksubdomain.exe test", "desc": "检测 Npcap/网卡环境是否正常" },
+        { "group": "其他", "cmd": "ksubdomain.exe -version", "desc": "查看版本" },
+        { "group": "其他", "cmd": "ksubdomain.exe -h", "desc": "查看完整帮助" }
+      ],
+      "tips": [
+        "爆破速度极快，注意目标授权的并发上限",
+        "依赖 Npcap，未安装会在依赖区提示",
+        "结果可用 -o 导出"
+      ],
+      "deps": ["npcap"],
+      "tags": ["子域名", "爆破", "高速"],
+      "website": "https://github.com/knownsec/ksubdomain"
+    },
+    {
+      "id": "oneforall",
+      "name": "OneForAll",
+      "category": "recon",
+      "type": "python",
+      "execTarget": "OneForAll/oneforall.py",
+      "workdir": "OneForAll",
+      "launchKind": "cli",
+      "runnable": true,
+      "argsPlaceholder": "--target example.com run",
+      "description": "功能强大的子域名收集框架（Python），集成证书透明度、DNS 数据集、搜索引擎、第三方 API 等多类数据源，并支持子域名接管检测与存活验证。",
+      "usage": "参数格式为 <b>--target 域名 run</b>。<br>首次运行会自动初始化，结果默认写入 OneForAll/results 目录。",
+      "examples": [
+        { "cmd": "python oneforall.py --target example.com run", "desc": "收集单个域名的子域名" },
+        { "cmd": "python oneforall.py --targets ./domains.txt run", "desc": "批量收集" },
+        { "cmd": "python oneforall.py --target example.com --port medium run", "desc": "携带端口扫描收集" }
+      ],
+      "commands": [
+        { "group": "基础用法", "cmd": "python oneforall.py --target example.com run", "desc": "收集单个域名（多源聚合）" },
+        { "group": "基础用法", "cmd": "python oneforall.py --targets ./domains.txt run", "desc": "从文件批量收集" },
+        { "group": "基础用法", "cmd": "python oneforall.py --target example.com --alive True run", "desc": "只保留存活的子域名" },
+        { "group": "爆破与端口", "cmd": "python oneforall.py --target example.com --brute True run", "desc": "开启子域名爆破" },
+        { "group": "爆破与端口", "cmd": "python oneforall.py --target example.com --port medium run", "desc": "附带常用端口扫描" },
+        { "group": "爆破与端口", "cmd": "python oneforall.py --target example.com --dns True run", "desc": "启用 DNS 数据集查询" },
+        { "group": "爆破与端口", "cmd": "python oneforall.py --target example.com --req False run", "desc": "关闭 HTTP 请求验证（更快）" },
+        { "group": "接管与验证", "cmd": "python oneforall.py --target example.com --takeover True run", "desc": "开启子域名接管检测" },
+        { "group": "接管与验证", "cmd": "python oneforall.py --target example.com --valid validate run", "desc": "验证已有结果是否存活" },
+        { "group": "结果查看", "cmd": "python oneforall.py --show example.com", "desc": "展示域名已收集的结果" },
+        { "group": "结果查看", "cmd": "python oneforall.py --help", "desc": "查看完整参数说明" }
+      ],
+      "tips": [
+        "结果 CSV 在 results/ 目录下",
+        "可在 api.py 填入各数据源 API Key 提升覆盖",
+        "需要 Python 3 且能访问外部数据源"
+      ],
+      "deps": ["python"],
+      "tags": ["子域名", "多源", "框架"],
+      "website": "https://github.com/shmilylty/OneForAll"
+    },
+    {
+      "id": "hfinger",
+      "name": "HFinger",
+      "category": "recon",
+      "type": "exe",
+      "execTarget": "hfinger/hfinger.exe",
+      "launchKind": "cli",
+      "description": "面向安全测试的服务端指纹识别工具，内置 1756 条指纹规则，可识别 Web 框架、CMS、中间件、CDN/WAF 等服务端组件，支持 Header/Cookie/HTML/JS/Favicon 等多证据融合。",
+      "usage": "命令行指纹识别工具。<br>点击「运行」在下方的内置运行器中执行，或点击「启动工具」以独立命令行窗口打开。<br>单目标：hfinger -u https://example.com",
+      "examples": [
+        { "cmd": "hfinger -u https://example.com", "desc": "识别单个目标的服务端指纹" },
+        { "cmd": "hfinger -f urls.txt --output-jsonl result.jsonl", "desc": "批量识别并输出 JSONL" },
+        { "cmd": "hfinger -u https://example.com -t 200 -p http://127.0.0.1:8080", "desc": "指定线程数与代理" }
+      ],
+      "commands": [
+        { "group": "基础用法", "cmd": "hfinger -u https://example.com", "desc": "识别单个 URL 指纹" },
+        { "group": "基础用法", "cmd": "hfinger -f urls.txt", "desc": "批量识别（每行一个 URL）" },
+        { "group": "基础用法", "cmd": "hfinger -u https://example.com --favicon", "desc": "启用 Favicon 哈希指纹" },
+        { "group": "输出", "cmd": "hfinger -f urls.txt --output-jsonl result.jsonl", "desc": "输出 JSONL 结果" },
+        { "group": "输出", "cmd": "hfinger -f urls.txt -o result.txt", "desc": "输出纯文本结果" },
+        { "group": "性能与网络", "cmd": "hfinger -u https://example.com -t 200", "desc": "设置并发线程数" },
+        { "group": "性能与网络", "cmd": "hfinger -u https://example.com -timeout 10", "desc": "设置请求超时（秒）" },
+        { "group": "性能与网络", "cmd": "hfinger -u https://example.com -p http://127.0.0.1:8080", "desc": "通过代理请求" },
+        { "group": "性能与网络", "cmd": "hfinger -u https://example.com --no-color", "desc": "关闭彩色输出，便于重定向" },
+        { "group": "其他", "cmd": "hfinger -h", "desc": "查看完整帮助" }
+      ],
+      "tips": [
+        "支持外置 YAML 规则扩展私有指纹",
+        "输出带置信度，便于复核"
+      ],
+      "deps": [],
+      "tags": ["指纹识别", "资产测绘"],
+      "website": ""
+    },
+    {
+      "id": "masscan",
+      "name": "masscan",
+      "category": "recon",
+      "type": "exe",
+      "execTarget": "masscan_src/bin/masscan.exe",
+      "launchKind": "cli",
+      "needAdmin": true,
+      "description": "号称「最快速」的互联网端口扫描器，采用异步传输技术，可在数分钟内扫描整个互联网地址空间，常用于大范围端口存活探测。",
+      "usage": "命令行端口扫描器。<br>点击「运行」在内置运行器中执行，或点击「启动工具」以管理员权限打开独立命令行窗口。<br>需要 Npcap/WinPcap 驱动，且扫描需管理员权限。",
+      "examples": [
+        { "cmd": "masscan -p1-65535 192.168.1.0/24 --rate=1000", "desc": "扫描一个 C 段全部端口" },
+        { "cmd": "masscan -p80,443 10.0.0.0/8 --rate=10000 -oL out.txt", "desc": "高速扫描常用端口并输出" }
+      ],
+      "commands": [
+        { "group": "基础扫描", "cmd": "masscan -p1-65535 192.168.1.0/24 --rate=1000", "desc": "扫描一个 C 段的全部端口" },
+        { "group": "基础扫描", "cmd": "masscan -p80,443,8080 10.0.0.0/8 --rate=10000", "desc": "扫描多个指定端口" },
+        { "group": "基础扫描", "cmd": "masscan --top-ports 100 192.168.1.0/24 --rate=1000", "desc": "扫描最常见的 100 个端口" },
+        { "group": "基础扫描", "cmd": "masscan --ping 10.0.0.0/8 --rate=1000", "desc": "仅做主机存活探测（Ping）" },
+        { "group": "基础扫描", "cmd": "masscan 192.168.1.0/24 -pU:53,161 --rate=1000", "desc": "扫描 UDP 端口" },
+        { "group": "输出", "cmd": "masscan -p80 192.168.1.0/24 -oL out.txt --rate=1000", "desc": "输出为简单列表格式" },
+        { "group": "输出", "cmd": "masscan -p80 192.168.1.0/24 -oJ out.json --rate=1000", "desc": "输出为 JSON" },
+        { "group": "输出", "cmd": "masscan -p80 192.168.1.0/24 -oX out.xml --rate=1000", "desc": "输出为 XML" },
+        { "group": "排除与网络", "cmd": "masscan -p22,80,443 --exclude 192.168.1.1 192.168.1.0/24 --rate=1000", "desc": "排除指定地址" },
+        { "group": "排除与网络", "cmd": "masscan --iflist", "desc": "列出本机可用网卡" },
+        { "group": "排除与网络", "cmd": "masscan --adapter 192.168.1.2 -p80 192.168.1.0/24 --rate=1000", "desc": "指定发包网卡" },
+        { "group": "其他", "cmd": "masscan -c scan.conf", "desc": "使用配置文件扫描" }
+      ],
+      "tips": [
+        "扫描互联网范围属高危操作，务必确认授权",
+        "--rate 控制发包速率，过高会被封禁",
+        "Windows 下需先安装 Npcap 并以管理员身份运行"
+      ],
+      "deps": ["npcap"],
+      "tags": ["端口扫描", "高速"],
+      "website": "https://github.com/robertdavidgraham/masscan"
+    },
+
+    {
+      "id": "burp",
+      "name": "Burp Suite",
+      "category": "web",
+      "type": "bat",
+      "execTarget": "BurpSuite V2023.9.2/Start.bat",
+      "workdir": "BurpSuite V2023.9.2",
+      "launchKind": "gui",
+      "description": "最主流的 Web 渗透测试集成平台，提供拦截代理、爬虫、扫描器、重放器（Repeater）、爆破器（Intruder）等模块，是 Web 安全测试的核心工具。",
+      "usage": "点击「启动工具」运行目录中的启动脚本（自动使用随附的 JRE）。<br>首次使用需在浏览器中把代理指向 Burp 的监听端口。",
+      "examples": [
+        { "cmd": "BurpSuite V2023.9.2/Start.bat", "desc": "启动 Burp（随附 JRE）" }
+      ],
+      "commands": [
+        { "group": "启动", "cmd": "Start.bat", "desc": "以随机端口启动，自动打开浏览器与临时代理" },
+        { "group": "启动", "cmd": "java -jar burpsuite_pro.jar", "desc": "用系统 Java 手动启动" },
+        { "group": "抓包配置", "cmd": "浏览器代理 → 127.0.0.1:8080", "desc": "把浏览器 HTTP/HTTPS 代理指向 Burp 默认端口" },
+        { "group": "抓包配置", "cmd": "导入证书 cacert.der", "desc": "把 Burp 证书导入系统/浏览器信任库以抓 HTTPS" },
+        { "group": "常用快捷键", "cmd": "Ctrl+R", "desc": "把当前请求发送到 Repeater（重放）" },
+        { "group": "常用快捷键", "cmd": "Ctrl+I", "desc": "把当前请求发送到 Intruder（爆破/模糊测试）" },
+        { "group": "常用快捷键", "cmd": "Ctrl+Shift+B", "desc": "把当前请求发送到 Scanner（扫描）" },
+        { "group": "常用快捷键", "cmd": "Ctrl+F", "desc": "在历史记录中搜索" }
+      ],
+      "tips": [
+        "浏览器需导入目录中的 cacert.der 证书才能抓 HTTPS",
+        "Intruder 常用于爆破与参数 fuzz",
+        "本目录已自带 java 运行时"
+      ],
+      "deps": ["java"],
+      "tags": ["抓包", "代理", "Web"],
+      "website": "https://portswigger.net/burp"
+    },
+    {
+      "id": "dirsearch",
+      "name": "dirsearch",
+      "category": "web",
+      "type": "python",
+      "execTarget": "dirsearch-master/dirsearch-master/dirsearch.py",
+      "workdir": "dirsearch-master/dirsearch-master",
+      "launchKind": "cli",
+      "runnable": true,
+      "argsPlaceholder": "-u http://example.com -e php,html,js",
+      "description": "常用的 Web 目录/文件扫描工具（Python），通过字典猜测站点隐藏的路径、备份文件与后台入口，是 Web 信息收集与漏洞发现的基础工具。",
+      "usage": "输入参数后点「运行」，扫描结果实时输出。",
+      "examples": [
+        { "cmd": "python dirsearch.py -u http://target/ -e php,html,js", "desc": "扫描常见后缀" },
+        { "cmd": "python dirsearch.py -u http://target/ -w dict.txt -r", "desc": "指定字典并递归扫描" }
+      ],
+      "commands": [
+        { "group": "基础用法", "cmd": "python dirsearch.py -u http://target/", "desc": "使用默认字典扫描" },
+        { "group": "基础用法", "cmd": "python dirsearch.py -u http://target/ -e php,html,js", "desc": "指定扩展名" },
+        { "group": "基础用法", "cmd": "python dirsearch.py -u http://target/ -e *", "desc": "对所有扩展名进行扫描" },
+        { "group": "基础用法", "cmd": "python dirsearch.py -u http://target/ -w dict.txt", "desc": "使用指定字典" },
+        { "group": "扫描控制", "cmd": "python dirsearch.py -u http://target/ -r", "desc": "对发现的目录递归扫描" },
+        { "group": "扫描控制", "cmd": "python dirsearch.py -u http://target/ -t 30", "desc": "设置并发线程数" },
+        { "group": "扫描控制", "cmd": "python dirsearch.py -u http://target/ --timeout 10", "desc": "设置请求超时（秒）" },
+        { "group": "扫描控制", "cmd": "python dirsearch.py -u http://target/ -x 404,500", "desc": "排除指定状态码" },
+        { "group": "扫描控制", "cmd": "python dirsearch.py -u http://target/ --random-agents", "desc": "随机 User-Agent，降低被封概率" },
+        { "group": "认证与代理", "cmd": "python dirsearch.py -u http://target/ --cookie \"PHPSESSID=xxx\"", "desc": "携带 Cookie 扫描" },
+        { "group": "认证与代理", "cmd": "python dirsearch.py -u http://target/ --proxy http://127.0.0.1:8080", "desc": "通过 Burp 等代理扫描" },
+        { "group": "输出", "cmd": "python dirsearch.py -u http://target/ -o report.json --format json", "desc": "导出 JSON 报告" },
+        { "group": "输出", "cmd": "python dirsearch.py --help", "desc": "查看完整帮助" }
+      ],
+      "tips": [
+        "-r 递归、--random-agents 可降低被封概率",
+        "默认字典在 db/ 目录",
+        "结果可用 -o 导出 json/csv"
+      ],
+      "deps": ["python"],
+      "tags": ["目录扫描", "Web"],
+      "website": "https://github.com/maurosoria/dirsearch"
+    },
+    {
+      "id": "antsword",
+      "name": "AntSword 蚁剑",
+      "category": "web",
+      "type": "exe",
+      "execTarget": "D:/MyDesktop/tools/antSword-master/AntSword-Loader-v4.0.3-win32-x64/AntSword-Loader-v4.0.3-win32-x64/AntSword.exe",
+      "external": true,
+      "launchKind": "gui",
+      "description": "开源的中国蚁剑（AntSword）WebShell 管理客户端，用于连接和管理已上传到目标站点的 WebShell，支持文件管理、虚拟终端、数据库操作等。",
+      "usage": "点击「启动工具」打开蚁剑。<br>该工具位于工具根目录之外，路径以绝对路径记录；迁移环境后可在设置或 user_tools.json 中修正。",
+      "examples": [],
+      "commands": [
+        { "group": "连接管理", "cmd": "右键 → 添加数据", "desc": "填写 WebShell 地址、连接密码与编码器后即可连接" },
+        { "group": "连接管理", "cmd": "右键数据 → 编辑", "desc": "修改已保存的连接配置" },
+        { "group": "常用功能", "cmd": "文件管理", "desc": "浏览 / 上传 / 下载 / 编辑目标服务器文件" },
+        { "group": "常用功能", "cmd": "虚拟终端", "desc": "在目标上执行系统命令" },
+        { "group": "常用功能", "cmd": "数据库管理", "desc": "连接并操作目标数据库" },
+        { "group": "常用功能", "cmd": "插件市场", "desc": "安装扩展（提权辅助、端口扫描等）" },
+        { "group": "常见编码器", "cmd": "default / base64 / chr / rot13", "desc": "按目标 WebShell 使用的编码方式选择对应编码器" }
+      ],
+      "tips": [
+        "仅用于获得明确授权的渗透测试",
+        "使用前需先有可用的 WebShell 连接"
+      ],
+      "deps": [],
+      "tags": ["WebShell", "后渗透"],
+      "website": "https://github.com/AntSwordProject/antSword"
+    },
+    {
+      "id": "cyberchef",
+      "name": "CyberChef",
+      "category": "web",
+      "type": "html",
+      "execTarget": "CyberChef_v10.5.2/CyberChef_v10.5.2.html",
+      "launchKind": "openurl",
+      "description": "被称作「网络瑞士军刀」的数据处理工具，内置数百种编码/解码/加密/压缩/解析操作（Base64、Hex、URL、AES、JWT…），可自由编排成「配方」，是 CTF 与取证中最常用的工具。",
+      "usage": "点击「在浏览器中打开」，会在默认浏览器加载离线版 CyberChef 页面，无需联网。",
+      "examples": [
+        { "cmd": "配方：From Base64 → Gunzip → Magic", "desc": "一键还原多层编码载荷" },
+        { "cmd": "Magic 模块", "desc": "自动识别并尝试解码，CTF 解密的起手式" }
+      ],
+      "commands": [
+        { "group": "编码解码", "cmd": "From Base64 / To Base64", "desc": "Base64 解码 / 编码" },
+        { "group": "编码解码", "cmd": "From Hex / To Hex", "desc": "十六进制与原始数据互转" },
+        { "group": "编码解码", "cmd": "URL Decode / URL Encode", "desc": "URL 百分号编码转换" },
+        { "group": "编码解码", "cmd": "From Base32 / From Base58 / From Base85", "desc": "其他 Base 变体" },
+        { "group": "加密解密", "cmd": "AES Decrypt", "desc": "AES 解密（需密钥/IV/模式）" },
+        { "group": "加密解密", "cmd": "XOR", "desc": "异或，常用于单字节爆破" },
+        { "group": "压缩与代码", "cmd": "Gunzip / Zlib Inflate", "desc": "解压 gzip/zlib 数据" },
+        { "group": "压缩与代码", "cmd": "JWT Decode", "desc": "解析 JWT 头部与载荷" },
+        { "group": "分析与提取", "cmd": "Magic", "desc": "自动识别并尝试解码，起手式神器" },
+        { "group": "分析与提取", "cmd": "Extract Files", "desc": "从数据中提取内嵌文件（含隐写流）" },
+        { "group": "分析与提取", "cmd": "Strings", "desc": "提取可见字符串" },
+        { "group": "分析与提取", "cmd": "Regular expression", "desc": "正则提取（如自动抓 flag）" },
+        { "group": "配方技巧", "cmd": "拖动操作到 Recipe 区", "desc": "多个操作按顺序串联成流水线" },
+        { "group": "配方技巧", "cmd": "Save recipe / Load recipe", "desc": "保存或加载配方（也可生成分享链接）" }
+      ],
+      "tips": [
+        "Magic 是自动识别神器，遇到杂乱密文先丢给它",
+        "配方可保存为链接分享"
+      ],
+      "deps": [],
+      "tags": ["编码转换", "解码", "瑞士军刀"],
+      "website": "https://gchq.github.io/CyberChef/"
+    },
+
+    {
+      "id": "ida",
+      "name": "IDA Pro",
+      "category": "reverse",
+      "type": "exe",
+      "execTarget": "ida/ida64.exe",
+      "launchKind": "gui",
+      "description": "业界标准的交互式反汇编器与反编译器，支持多平台架构，可对二进制程序进行静态分析、函数识别与伪代码还原，是逆向工程与漏洞分析的首选工具。",
+      "usage": "点击「启动工具」打开 64 位 IDA，把目标文件拖入即可分析；目录中另有 32 位版本 ida.exe。",
+      "examples": [],
+      "commands": [
+        { "group": "常用快捷键", "cmd": "F5", "desc": "生成伪代码（需 Hex-Rays 反编译器）" },
+        { "group": "常用快捷键", "cmd": "Shift+F12", "desc": "打开字符串窗口（Strings）" },
+        { "group": "常用快捷键", "cmd": "X", "desc": "查看交叉引用（谁引用了/被谁引用）" },
+        { "group": "常用快捷键", "cmd": "N", "desc": "重命名函数/变量" },
+        { "group": "常用快捷键", "cmd": "G", "desc": "跳转到指定地址" },
+        { "group": "常用快捷键", "cmd": "Space", "desc": "在反汇编与图形视图之间切换" },
+        { "group": "常用快捷键", "cmd": "Ctrl+F", "desc": "搜索指令/字节/文本" },
+        { "group": "分析操作", "cmd": "Options → General → Analysis", "desc": "调整自动分析选项，提升识别率" },
+        { "group": "分析操作", "cmd": "File → Produce file → IDC/IDAPython", "desc": "运行脚本批量处理" },
+        { "group": "分析操作", "cmd": "Edit → Patch program", "desc": "修改指令/字节做补丁" }
+      ],
+      "tips": [
+        "F5 生成伪代码（需 Hex-Rays 反编译器）",
+        "支持 IDA Python 脚本批量处理",
+        "32 位程序请改用 ida.exe"
+      ],
+      "deps": [],
+      "tags": ["反汇编", "逆向", "静态分析"],
+      "website": "https://hex-rays.com/ida-pro/"
+    },
+    {
+      "id": "x64dbg",
+      "name": "x64dbg",
+      "category": "reverse",
+      "type": "exe",
+      "execTarget": "x64dbg/release/x64/x64dbg.exe",
+      "launchKind": "gui",
+      "description": "Windows 平台开源的动态调试器，界面现代、插件丰富，支持断点、内存查看与反汇编跟随，常用于分析 32/64 位 PE 程序的运行流程与算法。",
+      "usage": "点击「启动工具」打开 64 位调试器；目录 release/x32/32dbg.exe 为 32 位版本。",
+      "examples": [],
+      "commands": [
+        { "group": "常用快捷键", "cmd": "F2", "desc": "在光标处设置/取消断点" },
+        { "group": "常用快捷键", "cmd": "F7", "desc": "单步步入（Step Into）" },
+        { "group": "常用快捷键", "cmd": "F8", "desc": "单步步过（Step Over）" },
+        { "group": "常用快捷键", "cmd": "F9", "desc": "运行 / 继续执行" },
+        { "group": "常用快捷键", "cmd": "Ctrl+G", "desc": "跳转到地址/表达式" },
+        { "group": "常用快捷键", "cmd": "Ctrl+F", "desc": "搜索字符串 / 命令 / 内存" },
+        { "group": "常用功能", "cmd": "右键 → Follow in Dump", "desc": "在数据窗口跟随查看某地址内容" },
+        { "group": "常用功能", "cmd": "右键 → Follow in Disassembler", "desc": "在反汇编窗口跟随跳转" },
+        { "group": "常用功能", "cmd": "插件 → ScyllaHide", "desc": "反反调试插件，绕过常见反调试检测" },
+        { "group": "常用功能", "cmd": "Scylla", "desc": "导入表修复 / 脱壳时重建 IAT" }
+      ],
+      "tips": [
+        "32 位程序需用 32dbg.exe",
+        "CTF 逆向常配合断点定位关键比较逻辑",
+        "注意目标程序可能带有反调试"
+      ],
+      "deps": [],
+      "tags": ["动态调试", "逆向"],
+      "website": "https://x64dbg.com/"
+    },
+    {
+      "id": "010editor",
+      "name": "010 Editor",
+      "category": "reverse",
+      "type": "exe",
+      "execTarget": "010Editor/010Editor.exe",
+      "launchKind": "gui",
+      "description": "专业级十六进制编辑器，内置模板（Template）与脚本系统，可解析 PNG、ZIP、PE 等文件结构，是 CTF 文件隐写、二进制修补与格式分析的利器。",
+      "usage": "点击「启动工具」打开。",
+      "examples": [],
+      "commands": [
+        { "group": "常用操作", "cmd": "File → Open", "desc": "打开二进制 / 镜像文件" },
+        { "group": "常用操作", "cmd": "Ctrl+F", "desc": "搜索文本 / 十六进制 / 值" },
+        { "group": "常用操作", "cmd": "Ctrl+G", "desc": "跳转到指定偏移" },
+        { "group": "模板解析", "cmd": "Templates → Run Template", "desc": "用模板解析 PNG/ZIP/PE 等结构" },
+        { "group": "模板解析", "cmd": "Templates → PNG.bt / ZIP.bt / EXE.bt", "desc": "常用文件结构模板" },
+        { "group": "编辑修补", "cmd": "直接输入十六进制覆盖", "desc": "修补被破坏的文件头/魔数" },
+        { "group": "编辑修补", "cmd": "Edit → Insert Bytes / Delete", "desc": "插入或删除字节（如去掉插空隐写）" },
+        { "group": "脚本", "cmd": "Script → Run Script", "desc": "运行 010 脚本做批处理" },
+        { "group": "脚本", "cmd": "Tools → Compare Files", "desc": "比较两个文件的差异" }
+      ],
+      "tips": [
+        "用模板功能可直观查看 PNG/GIF 结构块",
+        "结合脚本可批量修改文件",
+        "常用于修复损坏的文件头"
+      ],
+      "deps": [],
+      "tags": ["十六进制", "文件分析"],
+      "website": "https://www.sweetscape.com/010editor/"
+    },
+    {
+      "id": "winhex",
+      "name": "WinHex",
+      "category": "reverse",
+      "type": "exe",
+      "execTarget": "WinHex_20.7_SR-0_Single.exe",
+      "launchKind": "gui",
+      "description": "老牌十六进制编辑器与磁盘编辑工具，支持文件、内存与磁盘扇区编辑，常用于数据恢复、二进制修补与取证分析。",
+      "usage": "点击「启动工具」打开。",
+      "examples": [],
+      "commands": [
+        { "group": "常用操作", "cmd": "文件 → 打开", "desc": "打开文件或磁盘镜像" },
+        { "group": "常用操作", "cmd": "文件 → 打开磁盘", "desc": "直接编辑物理磁盘 / 分区 / 内存" },
+        { "group": "常用操作", "cmd": "搜索 → 查找十六进制值", "desc": "按十六进制搜特征（如文件魔数）" },
+        { "group": "常用操作", "cmd": "位置 → 转到偏移", "desc": "跳转到指定偏移定位" },
+        { "group": "编辑修补", "cmd": "编辑 → 修改数据", "desc": "直接修改字节" },
+        { "group": "取证功能", "cmd": "专业工具 → 制作镜像", "desc": "对磁盘/分区制作取证镜像" },
+        { "group": "取证功能", "cmd": "专业工具 → 文件恢复", "desc": "扫描并恢复被删除的文件" },
+        { "group": "取证功能", "cmd": "工具 → 文件系统浏览器", "desc": "以文件系统视图浏览镜像内容" },
+        { "group": "校验", "cmd": "工具 → 计算哈希", "desc": "计算 MD5/SHA1/SHA256 校验值" }
+      ],
+      "tips": [
+        "可直接编辑磁盘扇区",
+        "配合取证镜像文件分析"
+      ],
+      "deps": [],
+      "tags": ["十六进制", "磁盘编辑"],
+      "website": "https://www.x-ways.net/winhex/"
+    },
+    {
+      "id": "emu8086",
+      "name": "emu8086",
+      "category": "reverse",
+      "type": "exe",
+      "execTarget": "D:/Program Files/emu8086/emu8086.exe",
+      "external": true,
+      "launchKind": "gui",
+      "description": "8086 汇编语言学习与仿真环境，可编写、编译并单步调试 16 位汇编程序，适合理解汇编基础与逆向入门。",
+      "usage": "位于工具根目录之外，路径以绝对路径记录。点击「启动工具」打开。",
+      "examples": [],
+      "commands": [
+        { "group": "常用操作", "cmd": "New", "desc": "新建汇编源文件" },
+        { "group": "常用操作", "cmd": "Emulate", "desc": "汇编并进入仿真调试" },
+        { "group": "常用操作", "cmd": "Single Step", "desc": "单步执行一条指令" },
+        { "group": "常用操作", "cmd": "Run", "desc": "连续运行到结束或断点" },
+        { "group": "调试窗口", "cmd": "Registers", "desc": "查看/修改寄存器值" },
+        { "group": "调试窗口", "cmd": "Memory", "desc": "查看内存数据变化" },
+        { "group": "调试窗口", "cmd": "Variables", "desc": "查看定义的变量" },
+        { "group": "常用指令示例", "cmd": "MOV AX, 4C00h / INT 21h", "desc": "经典程序退出（DOS 中断）" },
+        { "group": "常用指令示例", "cmd": "LEA / INC / DEC / CMP / JMP", "desc": "常用寻址、运算与跳转指令" }
+      ],
+      "tips": [
+        "适合学习汇编指令",
+        "可实时查看寄存器与内存变化"
+      ],
+      "deps": [],
+      "tags": ["汇编", "仿真"],
+      "website": ""
+    },
+
+    {
+      "id": "stegsolve",
+      "name": "StegSolve",
+      "category": "stego",
+      "type": "jar",
+      "execTarget": "stegsolve/StegSolve-1.4.jar",
+      "launchKind": "gui",
+      "description": "经典的图像隐写分析工具（Java），可对图片进行通道分离、位平面提取、颜色过滤与帧浏览等操作，是 CTF 图片隐写的必备工具。",
+      "usage": "点击「启动工具」通过 java -jar 启动（需 Java 运行时）。",
+      "examples": [],
+      "commands": [
+        { "group": "启动", "cmd": "java -jar StegSolve-1.4.jar", "desc": "命令行方式启动 StegSolve" },
+        { "group": "通道分析", "cmd": "Analyse → Channel(s)", "desc": "分离 R/G/B/Alpha 及灰度通道" },
+        { "group": "通道分析", "cmd": "Analyse → Frame Browser", "desc": "逐帧浏览 GIF 动图" },
+        { "group": "位平面", "cmd": "Analyse → Bit Plane Order", "desc": "按不同位平面顺序提取隐藏图" },
+        { "group": "位平面", "cmd": "Analyse → Image Combiner", "desc": "多图叠加/异或（XOR）比对" },
+        { "group": "颜色过滤", "cmd": "Analyse → Colour Filters", "desc": "颜色筛选，突出隐藏信息" },
+        { "group": "颜色过滤", "cmd": "Analyse → Random Colour Map", "desc": "随机调色板，有时能直接显现文字" },
+        { "group": "数据提取", "cmd": "Analyse → Extract LSB", "desc": "按 LSB 位序提取隐写数据" },
+        { "group": "数据提取", "cmd": "File → Save As", "desc": "保存当前处理结果为图片" }
+      ],
+      "tips": [
+        "GIF 可用 Frame Browser 逐帧查看",
+        "位平面（Bit Plane）常藏有隐藏图",
+        "颜色通道翻转常能发现隐藏文字"
+      ],
+      "deps": ["java"],
+      "tags": ["图片隐写", "通道分析"],
+      "website": "https://github.com/zardus/ctf-tools"
+    },
+    {
+      "id": "gifframe",
+      "name": "GIFFrame",
+      "category": "stego",
+      "type": "exe",
+      "execTarget": "GIFFrame.exe",
+      "launchKind": "gui",
+      "description": "GIF 逐帧分解小工具，把动图拆成单帧图片，便于发现隐藏在某一帧或帧差中的信息。",
+      "usage": "点击「启动工具」打开，选择 GIF 文件即可分解。",
+      "examples": [],
+      "commands": [
+        { "group": "使用流程", "cmd": "打开 GIF 文件", "desc": "选择目标动图" },
+        { "group": "使用流程", "cmd": "分解为单帧", "desc": "把动图拆成一帧一帧的图片" },
+        { "group": "使用流程", "cmd": "导出 / 保存帧", "desc": "把帧保存到本地进一步分析" },
+        { "group": "配套命令", "cmd": "ffmpeg -i in.gif frame_%03d.png", "desc": "用 ffmpeg 也可逐帧导出" },
+        { "group": "配套命令", "cmd": "identify in.gif", "desc": "ImageMagick 查看帧数与尺寸" }
+      ],
+      "tips": [
+        "关注帧之间的差异常能发现隐写内容",
+        "拆帧后可用 StegSolve 进一步分析"
+      ],
+      "deps": [],
+      "tags": ["GIF", "逐帧"],
+      "website": ""
+    },
+    {
+      "id": "base64stego",
+      "name": "Base64 隐写解密",
+      "category": "stego",
+      "type": "python",
+      "execTarget": "base64_steganography/solve.py",
+      "workdir": "base64_steganography",
+      "launchKind": "cli",
+      "runnable": true,
+      "argsPlaceholder": "<包含密文的文本文件路径>",
+      "inputs": [
+        { "label": "含隐写的 Base64 文本", "accepts": "文本文件 (*.txt *.b64 *.data)", "dest": "cipher.txt", "note": "把包含可疑 Base64 内容的文件拖进来，会自动复制为该脚本目录下的 cipher.txt；随后可运行：python solve.py cipher.txt", "optional": true }
+      ],
+      "description": "针对 Base64 隐写的解密脚本：当 Base64 编码的末尾填充位被用于携带隐藏信息时，可通过该脚本还原出被藏起的字节。",
+      "usage": "先把含密文的文件准备到脚本目录（可点「准备文件」拖入），再输入文件名后点「运行」。",
+      "examples": [
+        { "cmd": "python solve.py cipher.txt", "desc": "解出 Base64 填充位中隐藏的内容" }
+      ],
+      "commands": [
+        { "group": "解密", "cmd": "python solve.py cipher.txt", "desc": "解出 Base64 填充位中隐藏的内容" },
+        { "group": "解密", "cmd": "python solve.py <密文文件>", "desc": "指定任意路径的密文文件" },
+        { "group": "辅助（Python）", "cmd": "python -c \"import base64,sys;print(base64.b64decode(open('cipher.txt').read()))\"", "desc": "先常规 Base64 解码看是否有提示" },
+        { "group": "辅助（Python）", "cmd": "sed -n '1p' cipher.txt | grep -o '.\\{4\\}$'", "desc": "观察每行尾部 4 字符的填充规律" }
+      ],
+      "tips": [
+        "典型特征：大量 Base64 文本且结尾填充不规范",
+        "本质是利用每 4 个字符中的冗余位传递数据"
+      ],
+      "deps": ["python"],
+      "tags": ["Base64", "隐写"],
+      "website": ""
+    },
+    {
+      "id": "emojiaes",
+      "name": "Emoji-AES",
+      "category": "stego",
+      "type": "html",
+      "execTarget": "emoji-aes-master/index.html",
+      "launchKind": "openurl",
+      "description": "在浏览器中运行的 Emoji AES 加解密工具：可把密文编码成一串 Emoji 表情，或从 Emoji 串还原明文，是 CTF 中「用表情传密文」类题目的常用工具。",
+      "usage": "点击「在浏览器中打开」，离线使用。",
+      "examples": [],
+      "commands": [
+        { "group": "解密", "cmd": "粘贴 Emoji 串 → 输入口令 → Decrypt", "desc": "把 Emoji 还原为明文" },
+        { "group": "加密", "cmd": "输入明文 → 口令 → Encrypt", "desc": "把明文编码为 Emoji 串" },
+        { "group": "解密", "cmd": "选择密钥长度 128/192/256", "desc": "按题目提示选择 AES 密钥长度" },
+        { "group": "配套命令", "cmd": "node emoji-aes.js", "desc": "若目录自带源码，可用 Node 本地运行" }
+      ],
+      "tips": [
+        "见到一串 Emoji 优先尝试本工具还原",
+        "AES 需要正确的密钥/口令"
+      ],
+      "deps": [],
+      "tags": ["Emoji", "AES", "编码"],
+      "website": ""
+    },
+    {
+      "id": "snow",
+      "name": "SNOW",
+      "category": "stego",
+      "type": "exe",
+      "execTarget": "SNOW/SNOW.EXE",
+      "workdir": "SNOW",
+      "launchKind": "cli",
+      "runnable": true,
+      "argsPlaceholder": "-C -p 密码 file.txt",
+      "inputs": [
+        { "label": "疑似含隐写的文本文件", "accepts": "文本文件 (*.txt *.text)", "dest": "file.txt", "note": "把文本拖进来，会自动复制为该工具目录下的 file.txt；随后可运行：SNOW.EXE -C -p 密码 file.txt", "optional": true }
+      ],
+      "description": "文本隐写工具，利用行尾空白字符（空格与制表符）隐藏信息，对文本外观几乎无影响，是 CTF「白空格隐写」类题目的经典工具。",
+      "usage": "先把文本文件准备到工具目录（可点「准备文件」拖入），再输入参数后点「运行」。常用 -C 解隐藏、-p 指定密码。",
+      "examples": [
+        { "cmd": "SNOW.EXE -C -p pass file.txt", "desc": "从文本中解出隐藏信息" },
+        { "cmd": "SNOW.EXE -C file.txt", "desc": "无密码解隐藏" }
+      ],
+      "commands": [
+        { "group": "解密", "cmd": "SNOW.EXE -C -p 密码 file.txt", "desc": "用密码从文本中解出隐藏信息" },
+        { "group": "解密", "cmd": "SNOW.EXE -C file.txt", "desc": "无密码解出隐藏信息" },
+        { "group": "解密", "cmd": "SNOW.EXE -C -p 密码 -Q file.txt", "desc": "静默模式，只输出隐藏内容" },
+        { "group": "加密", "cmd": "SNOW.EXE -C -m \"隐藏内容\" -p 密码 file.txt", "desc": "把信息隐藏进文本" },
+        { "group": "加密", "cmd": "SNOW.EXE -C -m \"内容\" -l 80 in.txt out.txt", "desc": "指定行宽输出到新文件" },
+        { "group": "辅助", "cmd": "SNOW.EXE -h", "desc": "查看完整帮助与参数" },
+        { "group": "辅助（十六进制）", "cmd": "xxd file.txt | less", "desc": "查看行尾空白字符分布，确认是否被 SNOW 处理过" }
+      ],
+      "tips": [
+        "用记事本看不出异常，需借助十六进制查看行尾空白",
+        "常见题干：「空格后面好像有东西」"
+      ],
+      "deps": [],
+      "tags": ["文本隐写", "空白字符"],
+      "website": ""
+    },
+    {
+      "id": "puzzlesolver",
+      "name": "PuzzleSolver",
+      "category": "stego",
+      "type": "exe",
+      "execTarget": "PuzzleSolver/PuzzleSolver.exe",
+      "launchKind": "gui",
+      "description": "图形验证码 / 滑块拼图类题目的辅助求解工具，内置图像处理能力，可用于还原被打乱或加噪的图片题目。",
+      "usage": "点击「启动工具」打开图形界面。",
+      "examples": [],
+      "commands": [
+        { "group": "使用流程", "cmd": "导入题目图片", "desc": "载入被打乱/加噪的图片" },
+        { "group": "使用流程", "cmd": "选择处理方式", "desc": "按题目类型选择拼图还原 / 去噪 / 二值化等" },
+        { "group": "使用流程", "cmd": "导出结果图", "desc": "保存还原后的图片进一步识别" },
+        { "group": "配套命令（OpenCV）", "cmd": "python -c \"import cv2; print(cv2.__version__)\"", "desc": "若需脚本处理，可确认本机 OpenCV 环境" }
+      ],
+      "tips": [
+        "也常用于图片还原、拼图类 CTF 题",
+        "内置 OpenCV，可做模板匹配"
+      ],
+      "deps": [],
+      "tags": ["拼图", "验证码", "图像"],
+      "website": ""
+    },
+
+    {
+      "id": "ftk",
+      "name": "FTK Imager",
+      "category": "forensics",
+      "type": "exe",
+      "execTarget": "FTK Imager/FTK Imager/FTK Imager.exe",
+      "launchKind": "gui",
+      "description": "专业取证镜像工具，可对磁盘、分区或文件夹制作取证镜像（E01/RAW），并支持挂载镜像、预览文件、提取注册表等，是电子数据取证与 CTF 取证题的标准工具之一。",
+      "usage": "点击「启动工具」打开 FTK Imager 主界面。",
+      "examples": [],
+      "commands": [
+        { "group": "镜像操作", "cmd": "File → Add Evidence Item", "desc": "加载镜像 / 物理磁盘 / 逻辑文件作为证据" },
+        { "group": "镜像操作", "cmd": "File → Create Disk Image", "desc": "对磁盘/分区制作 E01/RAW 镜像" },
+        { "group": "镜像操作", "cmd": "File → Image Mounting", "desc": "把镜像挂载为虚拟磁盘，便于浏览" },
+        { "group": "浏览与提取", "cmd": "双击条目展开目录树", "desc": "浏览镜像内的文件系统" },
+        { "group": "浏览与提取", "cmd": "右键 → Export Files", "desc": "导出选中的文件（如 flag）" },
+        { "group": "浏览与提取", "cmd": "右键 → Export File Hash List", "desc": "导出文件哈希清单" },
+        { "group": "注册表", "cmd": "展开 Registry 节点", "desc": "直接查看镜像中的注册表配置单元" },
+        { "group": "校验", "cmd": "View → Verify Drive/Image", "desc": "校验镜像完整性（MD5/SHA1）" }
+      ],
+      "tips": [
+        "CTF 中常用于查看 E01/RAW 镜像里的文件",
+        "可挂载镜像后直接用资源管理器浏览"
+      ],
+      "deps": [],
+      "tags": ["取证", "磁盘镜像"],
+      "website": "https://www.exterro.com/ftk-imager"
+    },
+    {
+      "id": "volatility",
+      "name": "Volatility",
+      "category": "forensics",
+      "type": "exe",
+      "execTarget": "volatility/volatility.exe",
+      "workdir": "volatility",
+      "launchKind": "cli",
+      "runnable": true,
+      "argsPlaceholder": "-f memory.raw imageinfo",
+      "inputs": [
+        { "label": "内存镜像文件", "accepts": "所有文件 (*.*)", "dest": "memory.raw", "note": "把内存镜像拖进来，会自动复制为该工具目录下的 memory.raw；随后可运行：volatility.exe -f memory.raw imageinfo", "optional": true }
+      ],
+      "description": "内存取证分析框架，可从内存镜像中提取进程、网络连接、剪贴板、注册表与凭据等痕迹，是 CTF 内存取证题的核心工具。",
+      "usage": "先把内存镜像准备到工具目录（可点「准备文件」拖入），再运行：先 imageinfo 判断镜像类型，再用对应 profile / 插件深入分析。",
+      "examples": [
+        { "cmd": "volatility.exe -f memory.raw imageinfo", "desc": "识别内存镜像的操作系统信息" },
+        { "cmd": "volatility.exe -f memory.raw --profile=Win7SP1x64 pslist", "desc": "列出进程" }
+      ],
+      "commands": [
+        { "group": "识别", "cmd": "volatility.exe -f memory.raw imageinfo", "desc": "识别镜像的操作系统 / profile（第一步）" },
+        { "group": "进程与网络", "cmd": "volatility.exe -f memory.raw --profile=Win7SP1x64 pslist", "desc": "列出进程列表" },
+        { "group": "进程与网络", "cmd": "volatility.exe -f memory.raw --profile=Win7SP1x64 pstree", "desc": "以树状显示进程父子关系" },
+        { "group": "进程与网络", "cmd": "volatility.exe -f memory.raw --profile=Win7SP1x64 psscan", "desc": "扫描隐藏/已终止的进程" },
+        { "group": "进程与网络", "cmd": "volatility.exe -f memory.raw --profile=Win7SP1x64 netscan", "desc": "列出网络连接与端口" },
+        { "group": "文件与凭据", "cmd": "volatility.exe -f memory.raw --profile=Win7SP1x64 filescan", "desc": "扫描内存中的文件对象" },
+        { "group": "文件与凭据", "cmd": "volatility.exe -f memory.raw --profile=Win7SP1x64 filescan | findstr flag", "desc": "在内核文件对象里搜关键字" },
+        { "group": "文件与凭据", "cmd": "volatility.exe -f memory.raw --profile=Win7SP1x64 dumpfiles -Q 0x地址 -D ./out", "desc": "按地址导出指定文件" },
+        { "group": "文件与凭据", "cmd": "volatility.exe -f memory.raw --profile=Win7SP1x64 hashdump", "desc": "导出用户密码哈希" },
+        { "group": "文件与凭据", "cmd": "volatility.exe -f memory.raw --profile=Win7SP1x64 hivelist", "desc": "列出注册表配置单元地址" },
+        { "group": "痕迹与截图", "cmd": "volatility.exe -f memory.raw --profile=Win7SP1x64 cmdscan", "desc": "提取命令行历史" },
+        { "group": "痕迹与截图", "cmd": "volatility.exe -f memory.raw --profile=Win7SP1x64 clipboard", "desc": "查看剪贴板内容" },
+        { "group": "痕迹与截图", "cmd": "volatility.exe -f memory.raw --profile=Win7SP1x64 screenshot -D ./out", "desc": "导出屏幕截图" },
+        { "group": "其他", "cmd": "volatility.exe -h", "desc": "查看全部插件与帮助" }
+      ],
+      "tips": [
+        "经典题型：找恶意进程、找隐藏文件、抓密码",
+        "plugins/ 目录下有很多社区插件",
+        "先 imageinfo 再选 profile 是关键"
+      ],
+      "deps": [],
+      "tags": ["内存取证", "Volatility"],
+      "website": "https://github.com/volatilityfoundation/volatility"
+    },
+    {
+      "id": "exiftool",
+      "name": "ExifTool",
+      "category": "forensics",
+      "type": "exe",
+      "execTarget": "exiftools/exiftool.exe",
+      "workdir": "exiftools",
+      "launchKind": "cli",
+      "runnable": true,
+      "argsPlaceholder": "image.jpg",
+      "description": "功能强大的元数据读写工具，可查看与编辑图片、音视频、文档中的 EXIF/XMP 等元数据，常用于 CTF 图片题的元数据排查与隐藏信息提取。",
+      "usage": "输入文件名后点「运行」查看元数据。",
+      "examples": [
+        { "cmd": "exiftool.exe image.jpg", "desc": "查看图片全部元数据" },
+        { "cmd": "exiftool.exe -a -u -g1 image.jpg", "desc": "分组显示，挖掘更多冷门字段" }
+      ],
+      "commands": [
+        { "group": "查看", "cmd": "exiftool.exe image.jpg", "desc": "查看图片全部元数据" },
+        { "group": "查看", "cmd": "exiftool.exe -a -u -g1 image.jpg", "desc": "分组显示并挖掘非标准/隐藏字段" },
+        { "group": "查看", "cmd": "exiftool.exe -s -ImageSize image.jpg", "desc": "仅显示指定标签的真实尺寸" },
+        { "group": "查看", "cmd": "exiftool.exe -json image.jpg", "desc": "以 JSON 格式输出全部元数据" },
+        { "group": "提取隐写", "cmd": "exiftool.exe -b -ThumbnailImage image.jpg > thumb.jpg", "desc": "导出内嵌缩略图（常见藏 flag）" },
+        { "group": "提取隐写", "cmd": "exiftool.exe -b -Comment image.jpg", "desc": "提取 Comment 字段内容" },
+        { "group": "提取隐写", "cmd": "exiftool.exe -b -all image.jpg > dump.bin", "desc": "导出所有二进制标签，再跑 strings" },
+        { "group": "批量与编辑", "cmd": "exiftool.exe -r ./dir", "desc": "递归查看整个目录" },
+        { "group": "批量与编辑", "cmd": "exiftool.exe -Comment=\"flag\" image.jpg", "desc": "写入 / 修改元数据" },
+        { "group": "批量与编辑", "cmd": "exiftool.exe --help", "desc": "查看完整帮助" }
+      ],
+      "tips": [
+        "-a -u 可查看被隐藏的非标准字段",
+        "元数据里常直接藏 flag",
+        "也支持批量处理整个目录"
+      ],
+      "deps": [],
+      "tags": ["元数据", "EXIF", "取证"],
+      "website": "https://exiftool.org/"
+    },
+    {
+      "id": "rstudio",
+      "name": "R-Studio",
+      "category": "forensics",
+      "type": "exe",
+      "execTarget": "R-Studio/RStudio.exe",
+      "launchKind": "gui",
+      "description": "专业的数据恢复与磁盘取证软件，可扫描磁盘/镜像中被删除或损坏的文件并恢复，常用于 CTF 取证、数据恢复与镜像文件分析。",
+      "usage": "点击「启动工具」打开。",
+      "examples": [],
+      "commands": [
+        { "group": "使用流程", "cmd": "打开 → 选择磁盘/镜像/分区", "desc": "选择要分析的目标" },
+        { "group": "使用流程", "cmd": "扫描（Scan）", "desc": "扫描并识别文件系统与可恢复文件" },
+        { "group": "使用流程", "cmd": "展开扫描结果 → 勾选文件 → 恢复", "desc": "选择并恢复被删除/损坏的文件" },
+        { "group": "使用流程", "cmd": "创建磁盘镜像", "desc": "把物理磁盘制作为镜像文件" },
+        { "group": "取证要点", "cmd": "查看分区 / 文件系统类型", "desc": "确认镜像结构与分区偏移" },
+        { "group": "取证要点", "cmd": "浏览文件夹与已知文件健康度", "desc": "定位可疑文件" }
+      ],
+      "tips": [
+        "可打开镜像文件做恢复分析",
+        "关注已删除文件中可能隐藏的内容"
+      ],
+      "deps": [],
+      "tags": ["数据恢复", "取证"],
+      "website": "https://www.r-studio.com/"
+    },
+    {
+      "id": "veracrypt",
+      "name": "VeraCrypt",
+      "category": "forensics",
+      "type": "exe",
+      "execTarget": "VeraCrypt/VeraCrypt.exe",
+      "launchKind": "gui",
+      "description": "开源磁盘加密软件（TrueCrypt 继任者），支持创建/挂载加密卷。CTF 中用于挂载题目给出的加密容器，获取其中隐藏的内容。",
+      "usage": "点击「启动工具」，然后选择加密容器文件并挂载。",
+      "examples": [],
+      "commands": [
+        { "group": "挂载", "cmd": "Select File → 选择加密容器", "desc": "选择题目提供的加密卷文件" },
+        { "group": "挂载", "cmd": "选择盘符 → Mount", "desc": "输入密码后把容器挂载为虚拟磁盘" },
+        { "group": "挂载", "cmd": "使用密钥文件（Keyfiles）", "desc": "题目提供密钥文件时勾选并指定" },
+        { "group": "挂载", "cmd": "隐藏卷：先挂外层密码", "desc": "支持隐藏卷，需正确的内/外密码" },
+        { "group": "常用参数", "cmd": "TrueCrypt Mode", "desc": "兼容挂载 TrueCrypt 加密卷" },
+        { "group": "常用参数", "cmd": "Dismount All", "desc": "卸载全部已挂载卷" }
+      ],
+      "tips": [
+        "挂载前需题目给出的密码/密钥文件",
+        "支持隐藏卷（hidden volume）",
+        "挂载后即可用资源管理器浏览内容"
+      ],
+      "deps": [],
+      "tags": ["磁盘加密", "容器挂载"],
+      "website": "https://www.veracrypt.fr/"
+    },
+    {
+      "id": "usbkeyboard",
+      "name": "USB 流量分析（键盘）",
+      "category": "forensics",
+      "type": "python",
+      "execTarget": "usb/keyboard/keyboard.py",
+      "workdir": "usb/keyboard",
+      "launchKind": "cli",
+      "runnable": true,
+      "argsPlaceholder": "<键盘流量 pcap 文件路径>",
+      "inputs": [
+        { "label": "Wireshark 导出的键盘流量文本", "accepts": "文本文件 (*.txt *.csv *.data)", "dest": "out.txt", "note": "在 Wireshark 中筛出键盘数据后用 「导出分组解析结果」 存成文本，拖到这里；会自动复制为脚本同目录的 out.txt（部分脚本变体直接读取 out.txt）。", "optional": true }
+      ],
+      "description": "USB HID 键盘流量解析脚本：从抓包文件中还原按键记录。CTF 常见题型是给定一段 USB 抓包，要求还原出用户敲下的内容（flag）。",
+      "usage": "可点「准备文件」把导出文本拖入（会复制为脚本目录下的 out.txt），也可直接把 pcap 路径作为参数运行。",
+      "examples": [
+        { "cmd": "python keyboard.py keyboard.pcap", "desc": "还原键盘按键记录" }
+      ],
+      "commands": [
+        { "group": "解析", "cmd": "python keyboard.py keyboard.pcap", "desc": "直接解析 pcap 还原按键" },
+        { "group": "解析", "cmd": "python keyboard.py out.txt", "desc": "解析已导出的键盘流量文本" },
+        { "group": "解析", "cmd": "python maohao.py keyboard.pcap", "desc": "同目录另一变体脚本" },
+        { "group": "抓包预处理（tshark）", "cmd": "tshark -r usb.pcap -Y \"usb.transfer_type==0x01 && usb.src=='1.2.1'\" -T fields -e usb.capdata", "desc": "只导出键盘设备的数据字节" },
+        { "group": "抓包预处理（tshark）", "cmd": "tshark -r usb.pcap -Y \"usb.capdata\" -T fields -e usb.capdata > out.txt", "desc": "把关键字段导出为文本给脚本用" },
+        { "group": "抓包预处理（Wireshark）", "cmd": "过滤 usb.transfer_type==0x01", "desc": "只看中断传输（HID 数据）" }
+      ],
+      "tips": [
+        "先确认抓的是 keyboard（键盘）而非 mouse",
+        "需同时解析键值与大小写/Shift 状态",
+        "同目录 maohao.py 为另一变体脚本"
+      ],
+      "deps": ["python"],
+      "tags": ["USB", "流量分析", "键盘"],
+      "website": ""
+    },
+    {
+      "id": "usbmouse",
+      "name": "USB 流量分析（鼠标）",
+      "category": "forensics",
+      "type": "python",
+      "execTarget": "usb/mouse/mouse.py",
+      "workdir": "usb/mouse",
+      "launchKind": "cli",
+      "runnable": true,
+      "argsPlaceholder": "<鼠标流量 pcap 文件路径>",
+      "inputs": [
+        { "label": "Wireshark 导出的鼠标流量文本（out.txt）", "accepts": "文本文件 (*.txt *.csv *.data)", "dest": "out.txt", "note": "在 Wireshark 中筛出鼠标数据后用「导出分组解析结果」存成文本，拖到这里；会自动复制为 mouse.py 同目录的 out.txt，脚本即可直接读取。", "optional": false }
+      ],
+      "description": "USB HID 鼠标流量解析脚本：从抓包数据中还原鼠标移动轨迹并绘制图像。CTF 常见题型是把鼠标轨迹画出来，轨迹本身即隐藏的文字/图案。",
+      "usage": "鼠标脚本读取同目录的 <b>out.txt</b>。点「准备文件」（或直接运行）会弹出拖拽窗口：把 Wireshark 导出的鼠标流量文本拖进去，自动落到 mouse.py 同目录后再点「运行」。",
+      "examples": [
+        { "cmd": "python mouse.py", "desc": "读取同目录 out.txt 绘制鼠标轨迹" },
+        { "cmd": "python mouse.py mouse.pcap", "desc": "也可直接传 pcap 路径" }
+      ],
+      "commands": [
+        { "group": "解析", "cmd": "python mouse.py", "desc": "读取同目录的 out.txt 并绘制轨迹" },
+        { "group": "解析", "cmd": "python mouse.py mouse.pcap", "desc": "直接解析 pcap 还原轨迹" },
+        { "group": "抓包预处理（tshark）", "cmd": "tshark -r usb.pcap -Y \"usb.transfer_type==0x01 && usb.src=='1.3.1'\" -T fields -e usb.capdata", "desc": "只导出鼠标设备的数据字节" },
+        { "group": "抓包预处理（tshark）", "cmd": "tshark -r usb.pcap -Y \"usb.capdata\" -T fields -e usb.capdata > out.txt", "desc": "导出鼠标数据到 out.txt 供脚本读取" },
+        { "group": "抓包预处理（Wireshark）", "cmd": "过滤 usb.transfer_type==0x01", "desc": "只看中断传输（HID 数据）" },
+        { "group": "抓包预处理（Wireshark）", "cmd": "导出分组解析结果 → 纯文本", "desc": "把筛选后的数据保存为文本文件" }
+      ],
+      "tips": [
+        "鼠标数据包含左右键与位移，位移对应轨迹",
+        "轨迹画出来后常直接呈现 flag 字形",
+        "脚本与 out.txt 必须在同一目录"
+      ],
+      "deps": ["python"],
+      "tags": ["USB", "流量分析", "鼠标"],
+      "website": ""
+    },
+
+    {
+      "id": "xuanyursa",
+      "name": "轩禹 CTF RSA 工具",
+      "category": "crypto",
+      "type": "exe",
+      "execTarget": "轩禹CTF_RSA/轩禹CTF_RSA工具3.6.1.exe",
+      "workdir": "轩禹CTF_RSA",
+      "launchKind": "gui",
+      "description": "面向 CTF 的国产 RSA 解题工具，集成常见 RSA 攻击场景（小公钥指数、共模、低加密指数、模不互素、Wiener 攻击等），并内置 yafu 大数分解工具。",
+      "usage": "点击「启动工具」打开图形界面，按题目条件选择对应攻击方式，填入 n/e/c 即可。",
+      "examples": [],
+      "commands": [
+        { "group": "常用攻击选择", "cmd": "e=3 且明文较短 → 低加密指数攻击（直接开方）", "desc": "c 开 e 次方即可还原明文" },
+        { "group": "常用攻击选择", "cmd": "同一 m、不同 (n,e) → 共模攻击", "desc": "两组密文可恢复 m" },
+        { "group": "常用攻击选择", "cmd": "n 很大、e 很大、d 很小 → Wiener 攻击", "desc": "连分数逼近求 d" },
+        { "group": "常用攻击选择", "cmd": "两个 n 有公因数 → 模不互素攻击", "desc": "gcd 分解出 p、q" },
+        { "group": "常用攻击选择", "cmd": "e 与 φ(n) 不互素 → 有限域开方", "desc": "处理 e 非互素场景" },
+        { "group": "配套 yafu", "cmd": "yafu.exe factor(n)", "desc": "对 n 做大数因数分解" },
+        { "group": "Python 辅助", "cmd": "python -c \"import gmpy2; print(gmpy2.isqrt(c))\"", "desc": "用 gmpy2 辅助整数开方验证" }
+      ],
+      "tips": [
+        "e=3 且 m 较小 → 低加密指数攻击",
+        "同一 m 用不同 n 加密 → 共模攻击",
+        "n 很大且 e 很大 → 尝试 Wiener 攻击",
+        "目录内 yafu 可做因数分解"
+      ],
+      "deps": [],
+      "tags": ["RSA", "密码学", "CTF"],
+      "website": ""
+    },
+    {
+      "id": "ctfcoder",
+      "name": "CTF 编码工具（随波逐流）",
+      "category": "crypto",
+      "type": "exe",
+      "execTarget": "[随波逐流]CTF编码工具 V7.3 20260506.exe",
+      "launchKind": "gui",
+      "description": "国产综合性 CTF 编码/加密工具，内置大量编码、古典密码与加解密算法（Base 系列、栅栏、凯撒、维吉尼亚、摩斯、进制转换等），适合快速处理编码类题目。",
+      "usage": "点击「启动工具」打开图形界面。",
+      "examples": [],
+      "commands": [
+        { "group": "编码解码", "cmd": "Base16 / Base32 / Base64 / Base85 / Base91", "desc": "常见 Base 系列编解码" },
+        { "group": "编码解码", "cmd": "进制转换（2/8/10/16）", "desc": "二进制与各进制互转" },
+        { "group": "编码解码", "cmd": "URL 编码 / Unicode 编码", "desc": "百分号与 \\u 转义互转" },
+        { "group": "古典密码", "cmd": "凯撒 / 栅栏 / 维吉尼亚", "desc": "经典移位与替换密码" },
+        { "group": "古典密码", "cmd": "摩斯电码 / 培根密码", "desc": "点划与 AB 编码" },
+        { "group": "古典密码", "cmd": "仿射 / 猪圈 / 键盘密码", "desc": "其他古典替换密码" },
+        { "group": "现代算法", "cmd": "MD5 / SHA / AES / DES", "desc": "哈希与对称加密" },
+        { "group": "实用功能", "cmd": "自动识别编码", "desc": "根据特征推断可能的编码方式" },
+        { "group": "实用功能", "cmd": "批量处理 / 自定义字典", "desc": "对多段数据批量尝试" }
+      ],
+      "tips": [
+        "编码类题目可先在此快速尝试各种算法",
+        "支持批量处理与自定义字典"
+      ],
+      "deps": [],
+      "tags": ["编码转换", "古典密码", "CTF"],
+      "website": ""
+    },
+    {
+      "id": "runcrypto",
+      "name": "密码学工具箱（脚本）",
+      "category": "crypto",
+      "type": "python",
+      "execTarget": "run_crypto.py",
+      "launchKind": "cli",
+      "runnable": true,
+      "argsPlaceholder": "decode <密文>   （或 detect / analyze / list / interactive）",
+      "description": "本地 Python 密码学工具箱入口脚本，提供自动解码、算法识别、特征分析与 RSA 攻击等功能（详细用法见脚本头部注释）。",
+      "usage": "输入参数后点「运行」。<br>注意：该脚本依赖同级的 <b>cryptotools</b> 包，若缺失请先补齐依赖。",
+      "examples": [
+        { "cmd": "python run_crypto.py detect <文本>", "desc": "自动识别编码/加密类型" },
+        { "cmd": "python run_crypto.py decode <密文>", "desc": "全自动解码" }
+      ],
+      "commands": [
+        { "group": "识别与分析", "cmd": "python run_crypto.py detect <文本>", "desc": "自动识别编码/加密类型" },
+        { "group": "识别与分析", "cmd": "python run_crypto.py analyze <密文>", "desc": "输出长度、字符集、熵等特征分析" },
+        { "group": "识别与分析", "cmd": "python run_crypto.py list", "desc": "列出支持的全部算法/编码" },
+        { "group": "解码", "cmd": "python run_crypto.py decode <密文>", "desc": "全自动尝试解码" },
+        { "group": "解码", "cmd": "python run_crypto.py decode <密文> --algo base64", "desc": "指定算法解码" },
+        { "group": "交互式", "cmd": "python run_crypto.py interactive", "desc": "进入交互模式逐条尝试" },
+        { "group": "RSA", "cmd": "python run_crypto.py rsa --n <n> --e <e> --c <c>", "desc": "按 RSA 参数尝试常见攻击" },
+        { "group": "其他", "cmd": "python run_crypto.py --help", "desc": "查看完整子命令与参数" }
+      ],
+      "tips": [
+        "先 detect 再 decode 更高效",
+        "支持管道输入"
+      ],
+      "deps": ["python"],
+      "tags": ["密码学", "自动识别"],
+      "website": ""
+    },
+
+    {
+      "id": "srcrecon",
+      "name": "SRCRecon",
+      "category": "recon",
+      "type": "exe",
+      "execTarget": "SRCRecon/build/SRCRecon.exe",
+      "workdir": "SRCRecon/build",
+      "launchKind": "gui",
+      "description": "基于 Qt6 + C++17 的多线程资产信息收集客户端（SRC 信息收集工具），面向 SRC 众测与授权渗透场景。一次任务即可完成子域名枚举、Whois/备案、端口与服务扫描、Web 指纹识别、目录敏感路径探测与爬虫链接收集，结果可导出 CSV/JSON。",
+      "usage": "点击「启动工具」打开图形界面。<br>在「目标」中填写域名 / IP / URL，勾选需要的收集模块，调整并发与字典后点「开始收集」；真实模式下会先弹出合法授权确认框。<br>勾选「演示模式」可在无网络下用内置数据跑通完整流程。",
+      "examples": [
+        { "cmd": "目标填 https://example.com，勾选全部模块开始收集", "desc": "一次完成资产收集" },
+        { "cmd": "端口表达式：common / 1-1024 / 80,443,8000-8100", "desc": "三种端口写法" },
+        { "cmd": "文件 → 导出为 CSV / JSON", "desc": "导出收集结果" }
+      ],
+      "commands": [
+        { "group": "使用流程", "cmd": "填写目标 → 勾选模块 → 开始收集", "desc": "输入域名/IP/URL 后一键收集" },
+        { "group": "使用流程", "cmd": "勾选「演示模式」", "desc": "不联网，用内置数据演示全部功能" },
+        { "group": "使用流程", "cmd": "文件 → 导出为 CSV / JSON", "desc": "导出结果（CSV 带 BOM，Excel 可直接打开）" },
+        { "group": "参数说明", "cmd": "端口范围：common / 1-1024 / 80,443,8000-8100", "desc": "三种端口表达式写法" },
+        { "group": "参数说明", "cmd": "子域名/目录字典：留空用内置，或选择 txt（每行一条，# 注释）", "desc": "支持外部字典文件" },
+        { "group": "参数说明", "cmd": "备案接口需含 {domain} 占位符", "desc": "例如 https://api.vvhan.com/api/icp?url={domain}" },
+        { "group": "收集模块", "cmd": "子域名枚举（crt.sh + 字典爆破）", "desc": "自动检测 DNS 泛解析并过滤污染结果" },
+        { "group": "收集模块", "cmd": "基础资产（Whois / 备案 / IP 归属 / ASN）", "desc": "域名注册与归属信息" },
+        { "group": "收集模块", "cmd": "端口与服务扫描", "desc": "并发 TCP 探测并抓 Banner 识别服务" },
+        { "group": "收集模块", "cmd": "Web 指纹识别", "desc": "识别 Nginx/Tomcat/Spring Boot/WordPress/ThinkPHP/Shiro 等" },
+        { "group": "收集模块", "cmd": "目录/敏感路径探测", "desc": "源码泄露、备份文件、Actuator/Swagger 等接口" },
+        { "group": "收集模块", "cmd": "爬虫与链接收集", "desc": "广度优先抓取链接/JS/表单，可限制深度与页数" }
+      ],
+      "tips": [
+        "仅供已获得合法授权的安全测试与 SRC 众测使用",
+        "真实模式首次收集会弹出授权确认框",
+        "参数经 QSettings 持久化记忆，任务执行中可随时取消"
+      ],
+      "deps": [],
+      "tags": ["资产收集", "SRC众测", "子域名", "端口扫描"],
+      "website": ""
+    },
+    {
+      "id": "npt",
+      "name": "NPT · Npcap AI Toolkit",
+      "category": "recon",
+      "type": "exe",
+      "execTarget": "npcap wter/bin/npt-gui.exe",
+      "workdir": "npcap wter/bin",
+      "launchKind": "gui",
+      "needAdmin": true,
+      "description": "自研 C++17 原生网络引擎（npt），提供 JSON CLI、MCP stdio 与 Qt 图形界面三种前端，共用同一套工具契约。内置 24 个网络工具：网卡/路由/DNS、主机发现、端口扫描、服务版本探测、路由追踪、抓包分析、报文构造与收发，并桥接官方 nmap/nping/ncat 与全部 611 个 NSE 脚本。有管理员权限 + Npcap 时走 raw 模式，否则自动降级为 socket 模式。",
+      "usage": "点击「启动工具」打开图形界面（npt-gui）。<br>左侧选择面板（扫描探测 / 报文工具 / 抓包分析 / Nmap 桥接），填参数后点「执行」，结果以 JSON 显示，「复制命令」可得到等价的 npt.exe 命令行。<br>SYN/ARP 扫描、原始报文收发需<b>管理员权限</b>（raw 模式），否则自动降级为 socket 模式。",
+      "examples": [
+        { "cmd": "npt.exe capabilities --pretty", "desc": "查看本机能力（权限 / Npcap / nmap / NSE 数量）" },
+        { "cmd": "npt.exe port_scan --target 192.168.1.1 --ports 22,80,443", "desc": "端口扫描" },
+        { "cmd": "npt.exe host_discovery --targets 192.168.1.0/24", "desc": "主机发现" }
+      ],
+      "commands": [
+        { "group": "环境与信息", "cmd": "npt.exe capabilities --pretty", "desc": "报告本机可用能力（入口工具）" },
+        { "group": "环境与信息", "cmd": "npt.exe tools", "desc": "列出全部 24 个工具" },
+        { "group": "环境与信息", "cmd": "npt.exe help port_scan", "desc": "查看某个工具的用法与参数" },
+        { "group": "环境与信息", "cmd": "npt.exe list_interfaces", "desc": "枚举本机网卡" },
+        { "group": "环境与信息", "cmd": "npt.exe routes", "desc": "读取路由表" },
+        { "group": "环境与信息", "cmd": "npt.exe dns_lookup --name example.com", "desc": "DNS 查询" },
+        { "group": "环境与信息", "cmd": "npt.exe ping --target 8.8.8.8", "desc": "ICMP ping" },
+        { "group": "扫描探测", "cmd": "npt.exe host_discovery --targets 192.168.1.0/24", "desc": "主机发现（网段存活）" },
+        { "group": "扫描探测", "cmd": "npt.exe port_scan --target 192.168.1.1 --ports 1-1024", "desc": "端口扫描（SYN/connect/UDP）" },
+        { "group": "扫描探测", "cmd": "npt.exe port_scan --target 192.168.1.1 --ports top1000", "desc": "扫描常见 1000 端口" },
+        { "group": "扫描探测", "cmd": "npt.exe service_probe --target 192.168.1.1 --ports 22,80", "desc": "服务版本探测（187 个探针）" },
+        { "group": "扫描探测", "cmd": "npt.exe traceroute --target 8.8.8.8", "desc": "路由追踪" },
+        { "group": "扫描探测", "cmd": "npt.exe snmp_info --target 192.168.1.1", "desc": "SNMP 查询" },
+        { "group": "扫描探测", "cmd": "npt.exe arp_scan --target 192.168.1.0/24", "desc": "ARP 扫描（需管理员）" },
+        { "group": "报文与抓包", "cmd": "npt.exe build_packet --kind tcp --dst-ip 10.0.0.2 --dport 80 --flags syn", "desc": "构造报文，返回 hex" },
+        { "group": "报文与抓包", "cmd": "npt.exe send_packet --iface <网卡> --packet <hex>", "desc": "发送原始报文（需管理员）" },
+        { "group": "报文与抓包", "cmd": "npt.exe capture --iface <网卡> --filter \"host 10.0.0.2\" --count 10", "desc": "抓包（需管理员）" },
+        { "group": "报文与抓包", "cmd": "npt.exe read_pcap --file a.pcap", "desc": "读取 pcap 文件" },
+        { "group": "报文与抓包", "cmd": "npt.exe decode_packet --packet <hex>", "desc": "解析报文" },
+        { "group": "Nmap 桥接", "cmd": "npt.exe nmap_run --target 192.168.1.1 --ports 22,80 --scan-type syn", "desc": "桥接官方 nmap 扫描" },
+        { "group": "Nmap 桥接", "cmd": "npt.exe nmap_run --target 192.168.1.1 --script smb-enum-shares", "desc": "调用 NSE 脚本" },
+        { "group": "Nmap 桥接", "cmd": "npt.exe nse_search --keyword smb", "desc": "检索 NSE 脚本" },
+        { "group": "Nmap 桥接", "cmd": "npt.exe nse_help --name smb-enum-shares", "desc": "查看 NSE 脚本详情" },
+        { "group": "Nmap 桥接", "cmd": "npt.exe nping_run / ncat_run", "desc": "桥接 nping / ncat" },
+        { "group": "JSON 传参", "cmd": "npt.exe port_scan --json '{\"target\":\"192.168.1.1\",\"ports\":\"22,80\"}'", "desc": "用 --json 整体传参" }
+      ],
+      "tips": [
+        "raw 模式（SYN/ARP/原始报文/抓包）需管理员权限 + Npcap，否则降级为 socket",
+        "输出为统一 JSON 信封：ok / tool / mode / elapsed_ms / data",
+        "GUI 日志在同目录 npt-gui.log",
+        "附带 npt.exe（CLI）与 npt-mcp.exe（MCP 服务），可脚本化或供 AI 调用",
+        "桥接 nmap 需系统存在 nmap.exe（或设置环境变量 NPT_NMAP_DIR）"
+      ],
+      "deps": ["npcap"],
+      "tags": ["网络", "端口扫描", "抓包", "MCP", "nmap"],
+      "website": ""
+    },
+    {
+      "id": "screenmacro",
+      "name": "ScreenMacro",
+      "category": "mystery",
+      "type": "exe",
+      "execTarget": "ScreenMacro/build/ScreenMacro.exe",
+      "workdir": "ScreenMacro/build",
+      "launchKind": "gui",
+      "description": "屏幕点击宏录制 / 回放小工具（自研 Qt 程序）。可拾取屏幕坐标、编排多步点击脚本、设置循环次数与间隔，运行前有倒数计时并可热键紧急停止；脚本可保存 / 加载为 JSON（如目录中的「点击脚本.json」）。",
+      "usage": "点击「启动工具」打开。<br>用「添加点位」拾取屏幕坐标组成脚本，设置循环与间隔后点「运行」；运行前会倒数计时，可用热键停止。脚本可「保存 / 加载」为 JSON。",
+      "examples": [
+        { "cmd": "添加点位 → 拾取坐标 → 运行", "desc": "录制并回放点击宏" },
+        { "cmd": "保存脚本 / 加载脚本", "desc": "脚本以 JSON 保存（如 点击脚本.json）" }
+      ],
+      "commands": [
+        { "group": "录制与回放", "cmd": "添加点位", "desc": "进入拾取模式，鼠标点击屏幕获取坐标" },
+        { "group": "录制与回放", "cmd": "删除选中 / 清空", "desc": "编辑脚本中的步骤" },
+        { "group": "录制与回放", "cmd": "设置循环次数与间隔(ms)", "desc": "控制回放节奏" },
+        { "group": "录制与回放", "cmd": "运行", "desc": "倒数计时后开始回放，可热键紧急停止" },
+        { "group": "脚本管理", "cmd": "保存脚本 / 加载脚本", "desc": "脚本以 JSON 文件保存与读取" },
+        { "group": "脚本管理", "cmd": "点击脚本.json", "desc": "目录内自带的示例脚本" }
+      ],
+      "tips": [
+        "本工具属「尚未归类」的私人小工具，已放入 wter的神秘东西",
+        "回放期间可用热键紧急停止",
+        "脚本为 JSON，可手动编辑步骤坐标"
+      ],
+      "deps": [],
+      "tags": ["宏", "点击", "自动化", "未归类"],
+      "website": ""
+    }
+  ]
+}

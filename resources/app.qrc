@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/">
+        <file>data/tools.json</file>
+        <file>qss/dark.qss</file>
+        <file>icons/app.svg</file>
+        <file>icons/cat_recon.svg</file>
+        <file>icons/cat_web.svg</file>
+        <file>icons/cat_reverse.svg</file>
+        <file>icons/cat_stego.svg</file>
+        <file>icons/cat_forensics.svg</file>
+        <file>icons/cat_crypto.svg</file>
+        <file>icons/cat_mystery.svg</file>
+    </qresource>
+</RCC>
