@@ -14,7 +14,7 @@
 
 ## 下载使用
 
-1. 到 [Releases](../../releases) 下载 `wter's tool-1.0.0-win64.zip` 并解压（**不含任何工具**）
+1. 到 [Releases](../../releases) 下载 `wters-tool-1.0.0-win64.zip` 并解压（**不含任何工具**）
 2. 运行 `wter's tool.exe`
 3. 指定你的工具根目录，二选一：
    - 在弹窗 /「设置」里选择工具根目录（例如 `D:/MyDesktop/tools/ctf/tools`）
