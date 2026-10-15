@@ -340,3 +340,70 @@ QToolTip {
     color: #e6e6e6;
     border: 1px solid #3f434c;
 }
+/* ---- 下拉框 / 复选框 / 多行文本（编辑器与管理器） ---- */
+QComboBox {
+    background: #2a2c32;
+    border: 1px solid #3a3d45;
+    border-radius: 6px;
+    padding: 5px 10px;
+    color: #e6e6e6;
+}
+QComboBox:focus { border-color: #2d7ff9; }
+QComboBox::drop-down {
+    border: none;
+    width: 22px;
+}
+QComboBox QAbstractItemView {
+    background: #232428;
+    border: 1px solid #3a3d45;
+    color: #e6e6e6;
+    selection-background-color: #2d7ff9;
+    selection-color: #ffffff;
+    outline: none;
+}
+
+QCheckBox {
+    color: #e6e6e6;
+    spacing: 6px;
+}
+QCheckBox::indicator {
+    width: 15px;
+    height: 15px;
+    border: 1px solid #4c515b;
+    border-radius: 3px;
+    background: #2a2c32;
+}
+QCheckBox::indicator:checked {
+    background: #2d7ff9;
+    border-color: #2d7ff9;
+}
+
+QPlainTextEdit {
+    background: #2a2c32;
+    border: 1px solid #3a3d45;
+    border-radius: 6px;
+    padding: 4px 6px;
+    color: #e6e6e6;
+}
+QPlainTextEdit:focus { border-color: #2d7ff9; }
+
+/* ---- 管理器表格 ---- */
+QTableWidget {
+    background: #202127;
+    border: 1px solid #303239;
+    border-radius: 8px;
+    gridline-color: #2c2e34;
+    color: #e6e6e6;
+}
+QTableWidget::item { padding: 4px 6px; }
+QTableWidget::item:selected {
+    background: #2d7ff9;
+    color: #ffffff;
+}
+QHeaderView::section {
+    background: #232428;
+    color: #8b93a1;
+    border: none;
+    border-bottom: 1px solid #303239;
+    padding: 6px 8px;
+}

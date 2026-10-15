@@ -29,14 +29,22 @@ signals:
     void launchRequested(const QString &id);
     void runRequested(const QString &id, const QStringList &args);
     void prepareInputsRequested(const QString &id);
+    void editRequested(const QString &id);
     void stopRequested();
     void stdinSubmitted(const QString &text);
     void openFolderRequested(const QString &path);
     void openUrlRequested(const QString &url);
 
+protected:
+    bool eventFilter(QObject *obj, QEvent *event) override;
+
 private:
     void buildUi();
     void rebuildDynamic();
+    void recordArgs(const QStringList &args);
+    void loadHistory();
+    void saveHistory();
+    void historyStep(int delta);
 
     ToolInfo m_tool;
     EnvStatus m_env;
@@ -62,6 +70,7 @@ private:
 
     QLineEdit *m_args = nullptr;
     QPushButton *m_primaryBtn = nullptr;
+    QPushButton *m_editBtn = nullptr;
     QPushButton *m_inputsBtn = nullptr;
     QPushButton *m_stopBtn = nullptr;
     QPushButton *m_folderBtn = nullptr;
@@ -69,4 +78,8 @@ private:
 
     QWidget *m_runSection = nullptr;
     ConsoleWidget *m_console = nullptr;
+
+    QStringList m_history;
+    int m_historyIndex = 0;
+    QString m_draft;
 };

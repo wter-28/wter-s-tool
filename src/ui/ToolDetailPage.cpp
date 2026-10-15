@@ -1,6 +1,10 @@
 #include "ToolDetailPage.h"
 #include "ConsoleWidget.h"
 #include "core/PathResolver.h"
+#include "core/ToolLauncher.h"
+
+#include <QKeyEvent>
+#include <QSettings>
 
 #include <QApplication>
 #include <QClipboard>
@@ -210,6 +214,10 @@ void ToolDetailPage::buildUi()
     btnRow->addWidget(m_primaryBtn);
     btnRow->addWidget(m_inputsBtn);
     btnRow->addWidget(m_stopBtn);
+    m_editBtn = new QPushButton(QStringLiteral("编辑"), m_runSection);
+    m_editBtn->setObjectName(QStringLiteral("GhostButton"));
+    m_editBtn->setToolTip(QStringLiteral("修改工具信息（自定义工具直接编辑；内置工具会生成一份覆盖配置）"));
+    btnRow->addWidget(m_editBtn);
     btnRow->addStretch();
     btnRow->addWidget(m_folderBtn);
     btnRow->addWidget(m_websiteBtn);
@@ -217,7 +225,9 @@ void ToolDetailPage::buildUi()
 
     m_args = new QLineEdit(m_runSection);
     m_args->setPlaceholderText(QStringLiteral("追加命令行参数（可选），例如 -d example.com"));
+    m_args->setToolTip(QStringLiteral("↑ / ↓ 可调用历史命令"));
     runCol->addWidget(m_args);
+    m_args->installEventFilter(this);
 
     m_console = new ConsoleWidget(m_runSection);
     runCol->addWidget(m_console);
@@ -232,10 +242,15 @@ void ToolDetailPage::buildUi()
             return;
         if (m_tool.needsConsole()) {
             const QStringList extra = m_args->text().split(QLatin1Char(' '), Qt::SkipEmptyParts);
+            recordArgs(extra);
             emit runRequested(m_id, extra);
         } else {
             emit launchRequested(m_id);
         }
+    });
+    connect(m_editBtn, &QPushButton::clicked, this, [this]() {
+        if (!m_id.isEmpty())
+            emit editRequested(m_id);
     });
     connect(m_stopBtn, &QPushButton::clicked, this, &ToolDetailPage::stopRequested);
     connect(m_inputsBtn, &QPushButton::clicked, this, [this]() {
@@ -332,6 +347,7 @@ void ToolDetailPage::loadTool(const ToolInfo &tool, const EnvStatus &env)
 
     rebuildDynamic();
     clearConsole();
+    loadHistory();
 }
 
 void ToolDetailPage::rebuildDynamic()
@@ -356,6 +372,16 @@ void ToolDetailPage::rebuildDynamic()
             QApplication::clipboard()->setText(cmd);
         });
         h->addWidget(code, 1);
+        QStringList runArgs;
+        if (ToolLauncher::deriveRunArgs(m_tool, cmd, runArgs)) {
+            auto *run = new QPushButton(QStringLiteral("运行"), row);
+            run->setObjectName(QStringLiteral("PrimaryButton"));
+            connect(run, &QPushButton::clicked, this, [this, runArgs]() {
+                recordArgs(runArgs);
+                emit runRequested(m_id, runArgs);
+            });
+            h->addWidget(run, 0, Qt::AlignTop);
+        }
         h->addWidget(copy, 0, Qt::AlignTop);
         m_examplesLayout->addWidget(row);
         if (!ex.desc.isEmpty()) {
@@ -396,6 +422,16 @@ void ToolDetailPage::rebuildDynamic()
             QApplication::clipboard()->setText(cmd);
         });
         h->addWidget(code, 1);
+        QStringList runArgs;
+        if (ToolLauncher::deriveRunArgs(m_tool, cmd, runArgs)) {
+            auto *run = new QPushButton(QStringLiteral("运行"), row);
+            run->setObjectName(QStringLiteral("PrimaryButton"));
+            connect(run, &QPushButton::clicked, this, [this, runArgs]() {
+                recordArgs(runArgs);
+                emit runRequested(m_id, runArgs);
+            });
+            h->addWidget(run, 0, Qt::AlignTop);
+        }
         h->addWidget(copy, 0, Qt::AlignTop);
         m_commandsLayout->addWidget(row);
         if (!c.desc.isEmpty()) {
@@ -458,4 +494,81 @@ void ToolDetailPage::appendConsole(const QString &text)
 void ToolDetailPage::clearConsole()
 {
     m_console->clearOutput();
+}
+
+bool ToolDetailPage::eventFilter(QObject *obj, QEvent *event)
+{
+    if (obj == m_args && event->type() == QEvent::KeyPress) {
+        auto *ke = static_cast<QKeyEvent *>(event);
+        if (ke->key() == Qt::Key_Up) {
+            historyStep(-1);
+            return true;
+        }
+        if (ke->key() == Qt::Key_Down) {
+            historyStep(1);
+            return true;
+        }
+    }
+    return QWidget::eventFilter(obj, event);
+}
+
+void ToolDetailPage::recordArgs(const QStringList &args)
+{
+    if (args.isEmpty())
+        return;
+    const QString line = args.join(QLatin1Char(' '));
+    if (line.isEmpty())
+        return;
+    if (!m_history.isEmpty() && m_history.last() == line)
+        return;
+    m_history << line;
+    while (m_history.size() > 30)
+        m_history.removeFirst();
+    m_historyIndex = m_history.size();
+    m_draft.clear();
+    saveHistory();
+}
+
+void ToolDetailPage::loadHistory()
+{
+    m_history.clear();
+    m_draft.clear();
+    if (!m_id.isEmpty()) {
+        QSettings s;
+        m_history = s.value(QStringLiteral("history/%1").arg(m_id)).toStringList();
+    }
+    m_historyIndex = m_history.size();
+}
+
+void ToolDetailPage::saveHistory()
+{
+    if (m_id.isEmpty())
+        return;
+    QSettings s;
+    s.setValue(QStringLiteral("history/%1").arg(m_id), m_history);
+}
+
+void ToolDetailPage::historyStep(int delta)
+{
+    if (m_history.isEmpty())
+        return;
+
+    if (delta < 0) {
+        if (m_historyIndex == m_history.size())
+            m_draft = m_args->text();
+        if (m_historyIndex > 0)
+            --m_historyIndex;
+        m_args->setText(m_history.at(m_historyIndex));
+    } else {
+        if (m_historyIndex >= m_history.size())
+            return;
+        ++m_historyIndex;
+        if (m_historyIndex >= m_history.size()) {
+            m_historyIndex = m_history.size();
+            m_args->setText(m_draft);
+        } else {
+            m_args->setText(m_history.at(m_historyIndex));
+        }
+    }
+    m_args->setCursorPosition(m_args->text().size());
 }

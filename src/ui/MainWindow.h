@@ -9,6 +9,8 @@
 
 class QLabel;
 class QStackedWidget;
+class QDragEnterEvent;
+class QDropEvent;
 class SearchBar;
 class SidebarWidget;
 class ToolGridWidget;
@@ -21,6 +23,10 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = nullptr);
 
+protected:
+    void dragEnterEvent(QDragEnterEvent *event) override;
+    void dropEvent(QDropEvent *event) override;
+
 private slots:
     void onCategoryChanged(const QString &categoryId);
     void onSearchChanged(const QString &text);
@@ -32,6 +38,8 @@ private slots:
     void onStop();
     void onOpenFolder(const QString &path);
     void onOpenUrl(const QString &url);
+    void onEditTool(const QString &id);
+    void onManageTools();
     void openSettings();
     void onEnvDetected(const EnvStatus &status);
     void refreshUi();
@@ -41,11 +49,14 @@ private:
     void wireSignals();
     void reloadRegistry();
     void updateEnvLabel();
+    void openEditor(const ToolInfo &tool, bool isNew);
+    void refreshCurrentTool();
 
     ToolRegistry m_registry;
     ToolLauncher m_launcher;
     EnvDetector m_env;
     EnvStatus m_envStatus;
+    QString m_currentToolId;
 
     SidebarWidget *m_sidebar = nullptr;
     SearchBar *m_search = nullptr;

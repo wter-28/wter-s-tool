@@ -76,6 +76,113 @@ bool ToolLauncher::buildCommand(const ToolInfo &tool, const QStringList &extraAr
     return true;
 }
 
+// 判断是否为需要剥离的“启动器”前缀
+static bool isLauncherToken(const QString &t)
+{
+    static const QStringList kLaunchers = {
+        QStringLiteral("python"), QStringLiteral("python.exe"), QStringLiteral("python3"),
+        QStringLiteral("py"), QStringLiteral("py.exe"),
+        QStringLiteral("java"), QStringLiteral("javaw"),
+        QStringLiteral("java.exe"), QStringLiteral("javaw.exe"),
+        QStringLiteral("cmd"), QStringLiteral("cmd.exe"),
+        QStringLiteral("node"), QStringLiteral("node.exe"),
+        QStringLiteral("powershell"), QStringLiteral("powershell.exe")
+    };
+    return kLaunchers.contains(t.toLower());
+}
+
+// 形如 xxx.py / xxx.exe 的“程序文件”token
+static bool looksLikeProgramFile(const QString &t)
+{
+    const QString s = t.toLower();
+    static const QStringList kExts = {
+        QStringLiteral(".py"), QStringLiteral(".jar"), QStringLiteral(".bat"),
+        QStringLiteral(".cmd"), QStringLiteral(".exe"), QStringLiteral(".ps1"),
+        QStringLiteral(".sh"), QStringLiteral(".js")
+    };
+    for (const QString &e : kExts) {
+        if (s.endsWith(e))
+            return true;
+    }
+    return false;
+}
+
+// 按空格切分命令行，双引号内的内容整体保留（引号去除）
+static QStringList splitCommandLine(const QString &line)
+{
+    QStringList out;
+    QString cur;
+    bool inQuote = false;
+    for (int i = 0; i < line.size(); ++i) {
+        const QChar ch = line.at(i);
+        if (ch == QLatin1Char('"')) {
+            inQuote = !inQuote;
+            continue;
+        }
+        if (!inQuote && ch.isSpace()) {
+            if (!cur.isEmpty()) {
+                out << cur;
+                cur.clear();
+            }
+            continue;
+        }
+        cur.append(ch);
+    }
+    if (!cur.isEmpty())
+        out << cur;
+    return out;
+}
+
+bool ToolLauncher::deriveRunArgs(const ToolInfo &tool, const QString &commandLine, QStringList &args)
+{
+    args.clear();
+
+    const QStringList toks = splitCommandLine(commandLine.trimmed());
+    if (toks.isEmpty())
+        return false;
+
+    // 收集“本工具自身”的可识别名字（含扩展名与去扩展名、忽略大小写）
+    QStringList self;
+    auto addSelf = [&self](const QString &path) {
+        if (path.isEmpty())
+            return;
+        const QFileInfo fi(path);
+        const QString full = fi.fileName().toLower();
+        const QString base = fi.completeBaseName().toLower();
+        if (!full.isEmpty())
+            self << full;
+        if (!base.isEmpty())
+            self << base;
+    };
+    addSelf(tool.resolvedPath);
+    addSelf(tool.execTarget);
+    if (!tool.name.isEmpty())
+        self << tool.name.toLower();
+
+    int i = 0;
+    if (isLauncherToken(toks.at(0))) {
+        ++i;
+        // 启动器后面跟脚本/可执行文件时一并吞掉
+        if (i < toks.size() && looksLikeProgramFile(toks.at(i)))
+            ++i;
+    } else {
+        QString first = toks.at(0).toLower();
+        // 去掉前置的 ./ 或 .\ 之类
+        while (!first.isEmpty()
+               && (first.at(0) == QLatin1Char('.')
+                   || first.at(0) == QLatin1Char('/')
+                   || first.at(0) == QLatin1Char('\\'))) {
+            first.remove(0, 1);
+        }
+        if (!self.contains(first))
+            return false;   // 不是本工具自身的命令（如 tshark / UI 步骤）
+        ++i;
+    }
+
+    args = toks.mid(i);
+    return true;
+}
+
 QString ToolLauncher::workingDirectory(const ToolInfo &tool)
 {
     if (!tool.workdir.isEmpty()) {

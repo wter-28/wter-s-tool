@@ -35,6 +35,10 @@ public:
     static bool buildCommand(const ToolInfo &tool, const QStringList &extraArgs,
                              QString &program, QStringList &args);
 
+    // 从「命令大全/示例」的完整命令行中剥出要传给本工具的参数。
+    // 可一键运行时返回 true（args 为参数）；无法识别（如 tshark / UI 步骤）返回 false。
+    static bool deriveRunArgs(const ToolInfo &tool, const QString &commandLine, QStringList &args);
+
 signals:
     void outputReady(const QString &text);
     void started(const QString &commandLine);

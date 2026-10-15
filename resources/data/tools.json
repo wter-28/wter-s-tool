@@ -555,20 +555,20 @@
       "workdir": "base64_steganography",
       "launchKind": "cli",
       "runnable": true,
-      "argsPlaceholder": "<包含密文的文本文件路径>",
+      "argsPlaceholder": "无需参数：脚本固定读取同目录 base64.txt",
       "inputs": [
-        { "label": "含隐写的 Base64 文本", "accepts": "文本文件 (*.txt *.b64 *.data)", "dest": "cipher.txt", "note": "把包含可疑 Base64 内容的文件拖进来，会自动复制为该脚本目录下的 cipher.txt；随后可运行：python solve.py cipher.txt", "optional": true }
+        { "label": "含隐写的 Base64 文本", "accepts": "文本文件 (*.txt *.b64 *.data)", "dest": "base64.txt", "note": "脚本固定读取同目录的 base64.txt，且不接收命令行参数。把包含可疑 Base64 内容的文件拖进来，会自动复制为该脚本目录下的 base64.txt，然后直接点「运行」即可。", "optional": true }
       ],
       "description": "针对 Base64 隐写的解密脚本：当 Base64 编码的末尾填充位被用于携带隐藏信息时，可通过该脚本还原出被藏起的字节。",
-      "usage": "先把含密文的文件准备到脚本目录（可点「准备文件」拖入），再输入文件名后点「运行」。",
+      "usage": "脚本固定读取同目录的 base64.txt，且不接收命令行参数。点「准备文件」把含密文的文本拖入（会自动复制为 base64.txt），再点「运行」即可。",
       "examples": [
-        { "cmd": "python solve.py cipher.txt", "desc": "解出 Base64 填充位中隐藏的内容" }
+        { "cmd": "python solve.py", "desc": "读取同目录 base64.txt，解出填充位中隐藏的内容" }
       ],
       "commands": [
-        { "group": "解密", "cmd": "python solve.py cipher.txt", "desc": "解出 Base64 填充位中隐藏的内容" },
-        { "group": "解密", "cmd": "python solve.py <密文文件>", "desc": "指定任意路径的密文文件" },
-        { "group": "辅助（Python）", "cmd": "python -c \"import base64,sys;print(base64.b64decode(open('cipher.txt').read()))\"", "desc": "先常规 Base64 解码看是否有提示" },
-        { "group": "辅助（Python）", "cmd": "sed -n '1p' cipher.txt | grep -o '.\\{4\\}$'", "desc": "观察每行尾部 4 字符的填充规律" }
+        { "group": "解密", "cmd": "python solve.py", "desc": "读取同目录 base64.txt，解出填充位中隐藏的内容" },
+        { "group": "准备", "cmd": "copy /Y 密文文件.txt base64.txt", "desc": "脚本固定读取 base64.txt；可先把待解文件复制/改名为 base64.txt" },
+        { "group": "辅助（Python）", "cmd": "python -c \"import base64,sys;print(base64.b64decode(open('base64.txt').read()))\"", "desc": "先常规 Base64 解码看是否有提示" },
+        { "group": "辅助（Python）", "cmd": "sed -n '1p' base64.txt | grep -o '.\\{4\\}$'", "desc": "观察每行尾部 4 字符的填充规律" }
       ],
       "tips": [
         "典型特征：大量 Base64 文本且结尾填充不规范",
@@ -834,19 +834,19 @@
       "workdir": "usb/keyboard",
       "launchKind": "cli",
       "runnable": true,
-      "argsPlaceholder": "<键盘流量 pcap 文件路径>",
+      "argsPlaceholder": "无需参数：脚本固定读取同目录 out.txt",
       "inputs": [
         { "label": "Wireshark 导出的键盘流量文本", "accepts": "文本文件 (*.txt *.csv *.data)", "dest": "out.txt", "note": "在 Wireshark 中筛出键盘数据后用 「导出分组解析结果」 存成文本，拖到这里；会自动复制为脚本同目录的 out.txt（部分脚本变体直接读取 out.txt）。", "optional": true }
       ],
       "description": "USB HID 键盘流量解析脚本：从抓包文件中还原按键记录。CTF 常见题型是给定一段 USB 抓包，要求还原出用户敲下的内容（flag）。",
-      "usage": "可点「准备文件」把导出文本拖入（会复制为脚本目录下的 out.txt），也可直接把 pcap 路径作为参数运行。",
+      "usage": "脚本固定读取同目录的 out.txt，且不接收命令行参数，结果直接打印到控制台。点「准备文件」把 Wireshark 导出的键盘流量文本拖入（会复制为 out.txt），再点「运行」。",
       "examples": [
-        { "cmd": "python keyboard.py keyboard.pcap", "desc": "还原键盘按键记录" }
+        { "cmd": "python keyboard.py", "desc": "读取同目录 out.txt，还原键盘按键记录" }
       ],
       "commands": [
-        { "group": "解析", "cmd": "python keyboard.py keyboard.pcap", "desc": "直接解析 pcap 还原按键" },
-        { "group": "解析", "cmd": "python keyboard.py out.txt", "desc": "解析已导出的键盘流量文本" },
-        { "group": "解析", "cmd": "python maohao.py keyboard.pcap", "desc": "同目录另一变体脚本" },
+        { "group": "解析", "cmd": "python keyboard.py", "desc": "读取同目录 out.txt，还原按键（先输出原始键值，再输出处理 DEL/CAP 后的结果）" },
+        { "group": "准备", "cmd": "copy /Y 键盘流量.txt out.txt", "desc": "脚本固定读取 out.txt；可先把导出文本保存/复制为 out.txt" },
+        { "group": "解析（变体）", "cmd": "python maohao.py", "desc": "变体脚本：读取同目录 usbdata.txt，整理为标准 out.txt 后再用 keyboard.py 解析" },
         { "group": "抓包预处理（tshark）", "cmd": "tshark -r usb.pcap -Y \"usb.transfer_type==0x01 && usb.src=='1.2.1'\" -T fields -e usb.capdata", "desc": "只导出键盘设备的数据字节" },
         { "group": "抓包预处理（tshark）", "cmd": "tshark -r usb.pcap -Y \"usb.capdata\" -T fields -e usb.capdata > out.txt", "desc": "把关键字段导出为文本给脚本用" },
         { "group": "抓包预处理（Wireshark）", "cmd": "过滤 usb.transfer_type==0x01", "desc": "只看中断传输（HID 数据）" }
@@ -869,19 +869,19 @@
       "workdir": "usb/mouse",
       "launchKind": "cli",
       "runnable": true,
-      "argsPlaceholder": "<鼠标流量 pcap 文件路径>",
+      "argsPlaceholder": "无需参数：脚本固定读取同目录 out.txt",
       "inputs": [
         { "label": "Wireshark 导出的鼠标流量文本（out.txt）", "accepts": "文本文件 (*.txt *.csv *.data)", "dest": "out.txt", "note": "在 Wireshark 中筛出鼠标数据后用「导出分组解析结果」存成文本，拖到这里；会自动复制为 mouse.py 同目录的 out.txt，脚本即可直接读取。", "optional": false }
       ],
       "description": "USB HID 鼠标流量解析脚本：从抓包数据中还原鼠标移动轨迹并绘制图像。CTF 常见题型是把鼠标轨迹画出来，轨迹本身即隐藏的文字/图案。",
-      "usage": "鼠标脚本读取同目录的 <b>out.txt</b>。点「准备文件」（或直接运行）会弹出拖拽窗口：把 Wireshark 导出的鼠标流量文本拖进去，自动落到 mouse.py 同目录后再点「运行」。",
+      "usage": "脚本固定读取同目录的 <b>out.txt</b>，且不接收命令行参数，运行后在同目录生成坐标文件 <b>xy.txt</b>。点「准备文件」把 Wireshark 导出的鼠标流量文本拖入，再点「运行」。",
       "examples": [
-        { "cmd": "python mouse.py", "desc": "读取同目录 out.txt 绘制鼠标轨迹" },
-        { "cmd": "python mouse.py mouse.pcap", "desc": "也可直接传 pcap 路径" }
+        { "cmd": "python mouse.py", "desc": "读取同目录 out.txt，把鼠标轨迹坐标写入 xy.txt" },
+        { "cmd": "type xy.txt", "desc": "查看脚本输出的坐标数据（用绘图脚本连线即可还原轨迹）" }
       ],
       "commands": [
-        { "group": "解析", "cmd": "python mouse.py", "desc": "读取同目录的 out.txt 并绘制轨迹" },
-        { "group": "解析", "cmd": "python mouse.py mouse.pcap", "desc": "直接解析 pcap 还原轨迹" },
+        { "group": "解析", "cmd": "python mouse.py", "desc": "读取同目录的 out.txt，把轨迹坐标写入 xy.txt" },
+        { "group": "准备", "cmd": "copy /Y 鼠标流量.txt out.txt", "desc": "脚本固定读取 out.txt；可先把导出文本复制为 out.txt" },
         { "group": "抓包预处理（tshark）", "cmd": "tshark -r usb.pcap -Y \"usb.transfer_type==0x01 && usb.src=='1.3.1'\" -T fields -e usb.capdata", "desc": "只导出鼠标设备的数据字节" },
         { "group": "抓包预处理（tshark）", "cmd": "tshark -r usb.pcap -Y \"usb.capdata\" -T fields -e usb.capdata > out.txt", "desc": "导出鼠标数据到 out.txt 供脚本读取" },
         { "group": "抓包预处理（Wireshark）", "cmd": "过滤 usb.transfer_type==0x01", "desc": "只看中断传输（HID 数据）" },
@@ -964,9 +964,9 @@
       "execTarget": "run_crypto.py",
       "launchKind": "cli",
       "runnable": true,
-      "argsPlaceholder": "decode <密文>   （或 detect / analyze / list / interactive）",
+      "argsPlaceholder": "decode <密文>  /  detect  /  analyze  /  rsa  /  list  /  interactive",
       "description": "本地 Python 密码学工具箱入口脚本，提供自动解码、算法识别、特征分析与 RSA 攻击等功能（详细用法见脚本头部注释）。",
-      "usage": "输入参数后点「运行」。<br>注意：该脚本依赖同级的 <b>cryptotools</b> 包，若缺失请先补齐依赖。",
+      "usage": "在参数框输入子命令后点「运行」，例如 <code>detect 5a6d6c6e5a31</code>、<code>decode 密文</code>。<br>脚本为自包含单文件实现，仅依赖 Python 标准库，无需额外安装依赖。",
       "examples": [
         { "cmd": "python run_crypto.py detect <文本>", "desc": "自动识别编码/加密类型" },
         { "cmd": "python run_crypto.py decode <密文>", "desc": "全自动解码" }

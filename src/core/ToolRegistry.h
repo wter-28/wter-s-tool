@@ -3,6 +3,7 @@
 #include <QList>
 #include <QObject>
 #include <QString>
+#include <QStringList>
 
 #include "ToolInfo.h"
 
@@ -25,7 +26,16 @@ public:
 
     QList<CategoryInfo> categories() const { return m_categories; }
     QList<ToolInfo> visibleTools() const;
+    QList<ToolInfo> allTools() const { return m_tools; }
     const ToolInfo *findById(const QString &id) const;
+
+    // 是否为内置工具（区分「恢复默认」与「删除」语义）
+    bool isBuiltinId(const QString &id) const;
+
+    // 用户工具写操作：写入 user_tools.json 并重新加载，返回是否成功
+    bool upsertUserTool(const ToolInfo &tool, QString *err = nullptr);
+    bool removeUserTool(const QString &id, QString *err = nullptr);
+    bool setUserHidden(const QString &id, bool hidden, QString *err = nullptr);
 
     int countInCategory(const QString &categoryId) const;
     int totalVisibleCount() const;
@@ -39,5 +49,6 @@ signals:
 private:
     QList<ToolInfo> m_tools;
     QList<CategoryInfo> m_categories;
+    QStringList m_builtinIds;
     QString m_root;
 };

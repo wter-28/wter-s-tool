@@ -81,6 +81,8 @@ struct ToolInfo {
     QStringList tips;                // 注意事项 / CTF 技巧
     QString icon;                    // 图标名（可选）
     bool hidden = false;
+    bool custom = false;      // 用户自建工具（来自 user_tools.json 的新增项）
+    bool overridden = false;  // 覆盖内置工具的用户条目
 
     // ---- 运行时解析结果 ----
     QString resolvedPath;
@@ -113,4 +115,8 @@ ToolType typeFromString(const QString &s);
 LaunchKind launchKindFromString(const QString &s);
 CategoryInfo categoryFromJson(const QJsonObject &o);
 ToolInfo fromJson(const QJsonObject &o);
+
+// 完整序列化（供写入 user_tools.json，编辑内置工具也不丢字段）
+QJsonObject toJson(const ToolInfo &t);
+QJsonObject categoryToJson(const CategoryInfo &c);
 } // namespace ToolParse

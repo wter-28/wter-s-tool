@@ -130,4 +130,130 @@ ToolInfo fromJson(const QJsonObject &o)
     return t;
 }
 
+static QJsonArray stringListToJson(const QStringList &list)
+{
+    QJsonArray arr;
+    for (const QString &s : list)
+        arr.append(s);
+    return arr;
+}
+
+static QString typeToString(ToolType t)
+{
+    switch (t) {
+    case ToolType::Exe:    return QStringLiteral("exe");
+    case ToolType::Bat:    return QStringLiteral("bat");
+    case ToolType::Jar:    return QStringLiteral("jar");
+    case ToolType::Python: return QStringLiteral("python");
+    case ToolType::Html:   return QStringLiteral("html");
+    case ToolType::Folder: return QStringLiteral("folder");
+    default:               return QStringLiteral("exe");
+    }
+}
+
+static QString launchKindToString(LaunchKind k)
+{
+    switch (k) {
+    case LaunchKind::Cli:     return QStringLiteral("cli");
+    case LaunchKind::OpenUrl: return QStringLiteral("openurl");
+    case LaunchKind::Folder:  return QStringLiteral("folder");
+    case LaunchKind::Gui:
+    default:                  return QStringLiteral("gui");
+    }
+}
+
+QJsonObject categoryToJson(const CategoryInfo &c)
+{
+    QJsonObject o;
+    o.insert(QStringLiteral("id"), c.id);
+    o.insert(QStringLiteral("name"), c.name);
+    o.insert(QStringLiteral("icon"), c.icon);
+    if (!c.desc.isEmpty())
+        o.insert(QStringLiteral("desc"), c.desc);
+    return o;
+}
+
+QJsonObject toJson(const ToolInfo &t)
+{
+    QJsonObject o;
+    o.insert(QStringLiteral("id"), t.id);
+    o.insert(QStringLiteral("name"), t.name);
+    o.insert(QStringLiteral("category"), t.categoryId);
+    o.insert(QStringLiteral("type"), typeToString(t.type));
+    o.insert(QStringLiteral("launchKind"), launchKindToString(t.launchKind));
+    if (!t.execTarget.isEmpty())
+        o.insert(QStringLiteral("execTarget"), t.execTarget);
+    if (!t.workdir.isEmpty())
+        o.insert(QStringLiteral("workdir"), t.workdir);
+    if (!t.defaultArgs.isEmpty())
+        o.insert(QStringLiteral("defaultArgs"), stringListToJson(t.defaultArgs));
+    if (!t.argsPlaceholder.isEmpty())
+        o.insert(QStringLiteral("argsPlaceholder"), t.argsPlaceholder);
+    if (t.external)
+        o.insert(QStringLiteral("external"), true);
+    if (t.requiresBuild)
+        o.insert(QStringLiteral("requiresBuild"), true);
+    if (!t.buildNote.isEmpty())
+        o.insert(QStringLiteral("buildNote"), t.buildNote);
+    if (t.needAdmin)
+        o.insert(QStringLiteral("needAdmin"), true);
+    o.insert(QStringLiteral("runnable"), t.runnable);
+    if (!t.deps.isEmpty())
+        o.insert(QStringLiteral("deps"), stringListToJson(t.deps));
+    if (!t.tags.isEmpty())
+        o.insert(QStringLiteral("tags"), stringListToJson(t.tags));
+    if (!t.website.isEmpty())
+        o.insert(QStringLiteral("website"), t.website);
+    if (!t.description.isEmpty())
+        o.insert(QStringLiteral("description"), t.description);
+    if (!t.usage.isEmpty())
+        o.insert(QStringLiteral("usage"), t.usage);
+    if (!t.tips.isEmpty())
+        o.insert(QStringLiteral("tips"), stringListToJson(t.tips));
+    if (!t.icon.isEmpty())
+        o.insert(QStringLiteral("icon"), t.icon);
+    o.insert(QStringLiteral("hidden"), t.hidden);
+
+    if (!t.examples.isEmpty()) {
+        QJsonArray arr;
+        for (const ToolExample &e : t.examples) {
+            QJsonObject eo;
+            eo.insert(QStringLiteral("cmd"), e.cmd);
+            eo.insert(QStringLiteral("desc"), e.desc);
+            arr.append(eo);
+        }
+        o.insert(QStringLiteral("examples"), arr);
+    }
+
+    if (!t.commands.isEmpty()) {
+        QJsonArray arr;
+        for (const ToolCommand &c : t.commands) {
+            QJsonObject co;
+            if (!c.group.isEmpty())
+                co.insert(QStringLiteral("group"), c.group);
+            co.insert(QStringLiteral("cmd"), c.cmd);
+            co.insert(QStringLiteral("desc"), c.desc);
+            arr.append(co);
+        }
+        o.insert(QStringLiteral("commands"), arr);
+    }
+
+    if (!t.inputs.isEmpty()) {
+        QJsonArray arr;
+        for (const ToolInput &in : t.inputs) {
+            QJsonObject io;
+            io.insert(QStringLiteral("label"), in.label);
+            io.insert(QStringLiteral("accepts"), in.accepts);
+            io.insert(QStringLiteral("dest"), in.dest);
+            if (!in.note.isEmpty())
+                io.insert(QStringLiteral("note"), in.note);
+            io.insert(QStringLiteral("optional"), in.optional);
+            arr.append(io);
+        }
+        o.insert(QStringLiteral("inputs"), arr);
+    }
+
+    return o;
+}
+
 } // namespace ToolParse

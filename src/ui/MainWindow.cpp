@@ -4,18 +4,25 @@
 #include "SearchBar.h"
 #include "SidebarWidget.h"
 #include "ToolDetailPage.h"
+#include "ToolEditorDialog.h"
 #include "ToolGridWidget.h"
+#include "ToolManagerDialog.h"
 
 #include "util/Log.h"
 
 #include <QDialog>
+#include <QDragEnterEvent>
+#include <QDropEvent>
+#include <QFileInfo>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QMessageBox>
+#include <QMimeData>
 #include <QPushButton>
 #include <QScreen>
 #include <QStackedWidget>
 #include <QStatusBar>
+#include <QUrl>
 #include <QVBoxLayout>
 #include <QWidget>
 
@@ -39,6 +46,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::buildUi()
 {
+    setAcceptDrops(true);
     setWindowTitle(QStringLiteral("wter's tool"));
     setMinimumSize(880, 560);
     const QRect avail = screen() ? screen()->availableGeometry() : QRect(0, 0, 1280, 800);
@@ -66,6 +74,11 @@ void MainWindow::buildUi()
     m_envLabel = new QLabel(header);
     m_envLabel->setObjectName(QStringLiteral("Muted"));
     h->addWidget(m_envLabel);
+
+    auto *manageBtn = new QPushButton(QStringLiteral("工具管理"), header);
+    manageBtn->setObjectName(QStringLiteral("GhostButton"));
+    connect(manageBtn, &QPushButton::clicked, this, &MainWindow::onManageTools);
+    h->addWidget(manageBtn);
 
     auto *settingsBtn = new QPushButton(QStringLiteral("设置"), header);
     settingsBtn->setObjectName(QStringLiteral("GhostButton"));
@@ -108,6 +121,7 @@ void MainWindow::wireSignals()
     connect(m_detail, &ToolDetailPage::launchRequested, this, &MainWindow::onLaunch);
     connect(m_detail, &ToolDetailPage::runRequested, this, &MainWindow::onRun);
     connect(m_detail, &ToolDetailPage::prepareInputsRequested, this, &MainWindow::onPrepareInputs);
+    connect(m_detail, &ToolDetailPage::editRequested, this, &MainWindow::onEditTool);
     connect(m_detail, &ToolDetailPage::stopRequested, this, &MainWindow::onStop);
     connect(m_detail, &ToolDetailPage::stdinSubmitted, &m_launcher, &ToolLauncher::writeStdin);
     connect(m_detail, &ToolDetailPage::openFolderRequested, this, &MainWindow::onOpenFolder);
@@ -150,6 +164,8 @@ void MainWindow::refreshUi()
 
     if (!m_registry.rootDir().isEmpty())
         statusBar()->showMessage(QStringLiteral("工具根目录：%1").arg(m_registry.rootDir()));
+
+    refreshCurrentTool();
 }
 
 void MainWindow::onCategoryChanged(const QString &categoryId)
@@ -169,6 +185,7 @@ void MainWindow::onToolActivated(const QString &id)
     const ToolInfo *tool = m_registry.findById(id);
     if (!tool)
         return;
+    m_currentToolId = id;
     m_detail->loadTool(*tool, m_envStatus);
     m_stack->setCurrentWidget(m_detail);
     AppSettings::instance().setLastToolId(id);
@@ -178,6 +195,7 @@ void MainWindow::showGridPage()
 {
     if (m_stack->count() > 0)
         m_stack->setCurrentIndex(0);
+    m_currentToolId.clear();
 }
 
 void MainWindow::onPrepareInputs(const QString &id)
@@ -266,4 +284,89 @@ void MainWindow::updateEnvLabel()
                                .arg(m_envStatus.javaPath.isEmpty() ? QStringLiteral("未检测到") : m_envStatus.javaPath,
                                     m_envStatus.pythonPath.isEmpty() ? QStringLiteral("未检测到") : m_envStatus.pythonPath,
                                     m_envStatus.npcapOk ? QStringLiteral("已安装") : QStringLiteral("未安装")));
+}
+
+static bool isSupportedDropFile(const QString &path)
+{
+    const QString suffix = QFileInfo(path).suffix().toLower();
+    static const QStringList kExts = {
+        QStringLiteral("exe"), QStringLiteral("py"), QStringLiteral("bat"),
+        QStringLiteral("cmd"), QStringLiteral("jar"), QStringLiteral("html"),
+        QStringLiteral("htm")
+    };
+    return kExts.contains(suffix);
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent *event)
+{
+    if (!event->mimeData()->hasUrls())
+        return;
+    const QList<QUrl> urls = event->mimeData()->urls();
+    for (const QUrl &u : urls) {
+        if (u.isLocalFile() && isSupportedDropFile(u.toLocalFile())) {
+            event->acceptProposedAction();
+            return;
+        }
+    }
+}
+
+void MainWindow::dropEvent(QDropEvent *event)
+{
+    const QList<QUrl> urls = event->mimeData()->urls();
+    for (const QUrl &u : urls) {
+        if (!u.isLocalFile())
+            continue;
+        const QString path = u.toLocalFile();
+        if (!isSupportedDropFile(path))
+            continue;
+
+        ToolEditorDialog dlg(m_registry.categories(), this);
+        dlg.setWindowTitle(QStringLiteral("从文件添加工具"));
+        dlg.presetFromFile(path);
+        if (dlg.exec() == QDialog::Accepted) {
+            QString err;
+            if (!m_registry.upsertUserTool(dlg.tool(), &err))
+                QMessageBox::warning(this, QStringLiteral("保存失败"), err);
+        }
+        event->acceptProposedAction();
+        return;
+    }
+}
+
+void MainWindow::onEditTool(const QString &id)
+{
+    const ToolInfo *tool = m_registry.findById(id);
+    if (!tool)
+        return;
+    openEditor(*tool, false);
+}
+
+void MainWindow::onManageTools()
+{
+    ToolManagerDialog dlg(&m_registry, this);
+    dlg.exec();
+}
+
+void MainWindow::openEditor(const ToolInfo &tool, bool isNew)
+{
+    ToolEditorDialog dlg(m_registry.categories(), this);
+    if (!isNew)
+        dlg.setTool(tool);
+    if (dlg.exec() != QDialog::Accepted)
+        return;
+    QString err;
+    if (!m_registry.upsertUserTool(dlg.tool(), &err))
+        QMessageBox::warning(this, QStringLiteral("保存失败"), err);
+}
+
+void MainWindow::refreshCurrentTool()
+{
+    if (m_currentToolId.isEmpty())
+        return;
+    const ToolInfo *tool = m_registry.findById(m_currentToolId);
+    if (!tool || tool->hidden) {
+        showGridPage();
+        return;
+    }
+    m_detail->loadTool(*tool, m_envStatus);
 }

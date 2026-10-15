@@ -53,6 +53,10 @@ set(PROJECT_SOURCES
     src/ui/ConsoleWidget.cpp
     src/ui/DragDropInputDialog.h
     src/ui/DragDropInputDialog.cpp
+    src/ui/ToolEditorDialog.h
+    src/ui/ToolEditorDialog.cpp
+    src/ui/ToolManagerDialog.h
+    src/ui/ToolManagerDialog.cpp
     src/ui/FirstRunWizard.h
     src/ui/FirstRunWizard.cpp
 
